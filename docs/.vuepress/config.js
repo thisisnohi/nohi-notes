@@ -1,5 +1,6 @@
 module.exports = {
   dest: '../../vuepress',
+  base: '/nohi-notes/',
   locales: {
     '/zh/': {
       lang: 'zh-CN',
