@@ -4,12 +4,16 @@ sidebar: auto
 
 # nginx 安装windows服务
 　以windows服务方式启动nginx
-> 坑：以服务方式启动，不支持restart，重启服务会生成两条exe在进程列表中
+::: danger 坑
+以服务方式启动，不支持restart，重启服务会生成两条exe在进程列表中
+:::
 
 ## 步骤
 
 * 下载winsw
-> 此处有个坑.之前下载个版本不成功，1.9版本，重新安装，启动OK。参见： https://www.cnblogs.com/liqiao/p/4627528.html
+::: danger 坑
+此处有个坑.之前下载个版本不成功，1.9版本，重新安装，启动OK。参见： https://www.cnblogs.com/liqiao/p/4627528.html
+:::
 
 * winsw-1.9-bin.exe 放到nginx解压目录，修改名称为 nginx-service.exe
 
