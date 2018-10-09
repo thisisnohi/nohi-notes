@@ -101,6 +101,8 @@ function genNotesSidebarConfig (title) {
       collapsable: false,
       children: [
         '',
+        'name',
+        'wechat',
         'nohi-notes',
       ]
     }

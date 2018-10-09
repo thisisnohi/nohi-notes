@@ -29,6 +29,6 @@ module.exports = [
   },
   {
     text: 'Changelog',
-    link: 'https://github.com/vuejs/thisisnohi/nohi-notes/master/CHANGELOG.md'
+    link: 'https://github.com/thisisnohi/nohi-notes/blob/master/CHANGELOG.md'
   }
 ]
