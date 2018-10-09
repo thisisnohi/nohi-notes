@@ -14,6 +14,14 @@ module.exports = [
         link: '/zh/version/svn'
       },
     ]
+  },{
+    text: '服务器',
+    items: [
+      {
+        text: 'nginx',
+        link: '/zh/server/nginx'
+      },
+    ]
   },
   {
     text: 'VuePress指南',
