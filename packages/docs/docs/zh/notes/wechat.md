@@ -19,8 +19,8 @@
 	* 绑定公众号或小程序，以形成UnionID
 
 ## 环境
-* 公众号: `nohi@live.cn/ading_**`  地址: https://mp.weixin.qq.com/?token=&lang=zh_CN
-* 开放平台: `ading_25@163.com/this_**` 地址:https://open.weixin.qq.com/?token=&lang=zh_CN
+* 公众号: `nohi@live.cn/a123`  地址: https://mp.weixin.qq.com/?token=&lang=zh_CN
+* 开放平台: `ading_25@163.com/t123` 地址:https://open.weixin.qq.com/?token=&lang=zh_CN
 
 * 公众号测试平台: https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index
 
