@@ -3,7 +3,8 @@ sidebar: auto
 ---
 
 # docker
-
+> 安装见: https://www.cnblogs.com/yufeng218/p/8370670.html
+> 介绍：https://www.cnblogs.com/s-b-b/p/8533932.html
 
 ## 配置
 ### 镜像加速
@@ -16,8 +17,29 @@ sidebar: auto
 ```
 
 ## 常用
-* 查看进程: docker ps
-	* docker ps -a
+* 镜像操作
+	* 查看当前本地镜像列表: docker images
+	* 查看远程相关镜像镜像: docker search 镜像名称
+	* 拉取镜像到本地: docker pull xxx
+	* 删除镜像: docker rmi 镜像名字
+		* 当存在多个名字一样的镜像时候，可以通过指定tag方式来操作，如ubuntu:16.04
+* 容器操作
+	* 创建一个docker容器，返回容器的id: docker create 镜像名字
+	* 运行docker容器：docker start 
+	* 新建容器且运行，也就是上面两步一块执行: docker run 镜像名字
+		* 如果镜像不在，从源拉去
+		* p：指定映射端口，如运行一个nginx服务，那么我可以设置 -p 8080:80来把本地的8080端口映射到容器里的80端口。
+		* d：容器作为一个守护进程去进行运行，也就是保持后台运行，运行后会返回cotainer id。
+	* 停止容器: docker stop  容器id
+	* 
+	* 查看进程: docker ps
+		* docker ps -a
+	* 删除容器: docker rm 容器id
+* 容器与镜像间的操作
+	* 终端连接到容器: docker exec -i -t 容器id bash
+	* 复制文件到容器里面: docker cp index.html 镜像id://usr/share/nginx/html
+	* 保存更改并生成为一个新的image文件: docker commit -m "mess" 镜像id 镜像名字
+
 * 查看容器内的标准输出: docker logs `CONTAINER ID` / docker logs `NAMES`
 	* docker logs -f id/name 类似tail -f
 * 停止容器: docker stop `CONTAINER ID` / docker stop `NAMES`
@@ -25,7 +47,7 @@ sidebar: auto
 * docker pull training/webapp  # 载入镜像
 * docker run -d -P training/webapp python app.py
 	* -d:让容器在后台运行。
-	* -P:将容器内部使用的网络端口映射到我们使用的主机上。
+	* -P:将容器内部使用的网络端口映射到我们使用的主机上。-p 8080:80来把本地的8080端口映射到容器里的80端口。
 * docker run -d -p 5000:5000 training/webapp python app.py  -p 设置端口映射
 * docker stop id/name
 * docker start id/name 重启
@@ -78,6 +100,7 @@ sidebar: auto
 * 设置镜像标签:  docker tag 860c279d2fec runoob/centos:dev
 
 
+
 ## 安装
 ### 安装nginx
 * docker pull nginx 拉取镜像
@@ -88,6 +111,50 @@ sidebar: auto
 	* -v $PWD/www:/www：将主机中当前目录下的www挂载到容器的/www
 	* -v $PWD/conf/nginx.conf:/etc/nginx/nginx.conf：将主机中当前目录下的nginx.conf挂载到容器的/etc/nginx/nginx.conf
 	* -v $PWD/logs:/wwwlogs：将主机中当前目录下的logs挂载到容器的/wwwlogs
+
+## Docker网络
+* 单机网络
+	* Bridge Network
+	* Host Network
+	* None Network
+* 多机网络
+	* Overlay Network
+	* 安装插件: etcd
+
+* docker network ls 查看网络
+* docker network create -h  查看帮助
+* docker network create -d bridge my-bridge 创建网络类型
+* docker run -d --name test3 --network my-bridge hello-world-loop
+* docker network connect -h
+
+* docker run -d --name test2 --link test hello-world-loop
+
+
+* 测试
+	*  docker run -d -p 5000:5000 --name test training/webapp python app.py
+	*   docker run -d -p 5001:5001 --name test2 --link test training/webapp python app.py
+
+	* docker network create -d bridge my-bridge 创建网络
+	* docker run -d -p 5003:5003 --network my-bridge --name test3 --link test training/webapp python app.py 指定网络
+	* docker network connect my-bridge test 指定网络连接容器
+	
+### Docker的镜像和容器
+* docker 依赖的底层技术
+	* namespaces:访问隔离(pid,network,mnt)
+	* cgroup:资源控制
+	* ufs:文件系统隔离
+
+* docker -o test.tar test 导出image
+* docker load -i test.tar 导入image
+
+* docker exec -it name bash 进入容器中
+
+* docker export containerid -o container.tar 导出容器
+* docker import container.tar xxxx/aaa  导入
+
+* 资源监控
+	* docker stats id
+	* docker inspect 
 
 ## 管理界面
 
