@@ -42,7 +42,6 @@ sidebar: auto
     * git checkout master  切换至master   
     * git merge dev  合并  
 
-*
 * 查看远程库信息，使用git remote -v；
 * 本地新建的分支如果不推送到远程，对其他人就是不可见的；
 * 从本地推送分支，使用git push origin branch-name，如果推送失败，先用git pull抓取远程的新提交；
@@ -120,3 +119,8 @@ Host work.scfsoft.com
 ```
 
 5. 测试　ssh -T git@github.com
+
+
+* Your branch is ahead of 'origin/master' by 21 commits.
+	*  提交本地内容: git push origin
+	*  删除本地分支: git reset --hard origin/master
