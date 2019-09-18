@@ -1,6 +1,11 @@
 # 性能
 > 20190130 https://www.ibm.com/developerworks/cn/java/j-lo-performance-tuning-practice/index.html
 
+## 常规
+* JVM
+	* -Xmx，默认1/4物理内存大小
+	* 
+
 ## Java 应用诊断工具
 
 ### jstack
