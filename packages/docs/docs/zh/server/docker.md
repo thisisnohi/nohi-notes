@@ -8,6 +8,7 @@ sidebar: auto
 
 ## 配置
 ### 镜像加速
+
 *  /etc/docker/daemon.json（Linux）
 *  %programdata%\docker\config\daemon.json（Windows）
 ```
@@ -104,15 +105,30 @@ sidebar: auto
 ## 安装
 ### 安装nginx
 * docker pull nginx 拉取镜像
+
 * docker images nginx 查看镜像情况
+
 * docker run -p 80:80 --name mynginx -v $PWD/www:/www -v $PWD/conf/nginx.conf:/etc/nginx/nginx.conf -v $PWD/logs:/wwwlogs  -d nginx  
 	* -p 80:80：将容器的80端口映射到主机的80端口
 	* --name mynginx：将容器命名为mynginx
 	* -v $PWD/www:/www：将主机中当前目录下的www挂载到容器的/www
 	* -v $PWD/conf/nginx.conf:/etc/nginx/nginx.conf：将主机中当前目录下的nginx.conf挂载到容器的/etc/nginx/nginx.conf
 	* -v $PWD/logs:/wwwlogs：将主机中当前目录下的logs挂载到容器的/wwwlogs
+	
+* 多个映射端口
+
+  nginx 监听了多个端口，但只有 `80` 端口起效果，如果想要多个端口起效果，则将 `-p 80:80` 换成 `--net host`，即
+
+  ```
+  
+  docker run -d --name nginx --restart always --net host -v ~/docker_root/nginx/conf/nginx.conf:/etc/nginx/nginx.conf -v ~/docker_root/nginx/html:/usr/share/nginx/html -v ~/docker_root/nginx/logs:/var/log/nginx -v ~/docker_root/nginx/conf.d:/etc/nginx/conf.d  nginx
+  
+  ```
+
+  
 
 ## Docker网络
+
 * 单机网络
 	* Bridge Network
 	* Host Network
@@ -187,7 +203,7 @@ sidebar: auto
 	不支持集群swarm等
 	功能少
 	不支持控制台命令
- 
+
 ### Shipyard
 > 打不开的，作者已经弃坑此项目: https://blog.hans362.cn/archives/266/
 

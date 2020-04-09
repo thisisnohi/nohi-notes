@@ -8,9 +8,9 @@ sidebar: auto
 
 * git remote -v 查看仓库地址
 * git status 查看本地文件状态
-* git pull 更新
 * git add filename   提交文件
 * git commit -m "this is commit　by nohi"   注释
+* git pull 更新
 * git log
 * git reflog用来记录你的每一次命令
 
@@ -52,7 +52,8 @@ sidebar: auto
 ## PUSH 提交
 * git push origin iss53 提交本地代码支分支iss53
 
-## stash 
+## Stash
+
 * git stash list 显示保存进度的列表
 * git stash 保存当前工作进度
 * git stash save 'message...' 可以添加一些注释
@@ -67,15 +68,84 @@ sidebar: auto
 > 除了不删除恢复的进度之外，其余和git stash pop 命令一样。
 
 * git stash drop [stash_id] 删除一个存储的进度。如果不指定stash_id，则默认删除最新的存储进度。
-
 * git stash clear 删除所有存储的进度
 
+
+
+## log
+
+* git log 
+* git log --pretty=oneline 显示一行
+* git log --graph --pretty=oneline --abbrev-commit
+
 ## 回滚
+
+* 未commit前： git checkout -- file命令中的--很重要，没有--，就变成了“切换到另一个分支”的命令，我们在后面的分支管理中会再次遇到git checkout命令。
+* git commit 前
+
+```
 如果只回退一个最新commit：git reset HEAD^
 如果需要回退多个commit：git reset 回退至的commit hash码
 如果直接要舍弃commit的内容，命令末尾加--hard
+多次commit后，例：c1 c2 c3.    可以随便切换commit时的版本 git reset commitId
+`git reflog` 查看历史操作命令记录
+
+场景1：当你改乱了工作区某个文件的内容，想直接丢弃工作区的修改时，用命令git checkout -- file。
+场景2：当你不但改乱了工作区某个文件的内容，还添加到了暂存区时，想丢弃修改，分两步，第一步用命令git reset HEAD <file>，就回到了场景1，第二步按场景1操作。
+场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考版本回退一节，不过前提是没有推送到远程库。 ( git reset HEAD^  / git reset commitid)
+```
+
+* git commit 后
+
+  ```
+  1. 使用git revert commitid
+  
+  2. -- reset 退到某次提交，那该提交之后的提交都会回滚，不过这种覆盖是不可逆的，之前的提交记录都没有了。所以平时开发中尽量注意，避免使用reset。
+  3. git  reset --hard  commit_id
+  4. 3执行完后，执行git push,报错：
+      ! [rejected]        master -> master (non-fast-forward)
+      error: failed to push some refs to 'https://github.com/thisisnohi/test_git'
+      hint: Updates were rejected because the tip of your current branch is behind
+      hint: its remote counterpart. Integrate the remote changes (e.g.
+      hint: 'git pull ...') before pushing again.
+      hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+    解决方法：git pull + 远程名+ 分支名操作  若是想直接强制推送，可以加上 -f 参数强制push
+      第一种. git push -f origin master 强制提交，不可逆转
+      第二种. git reset 最新的commit_id 然后git add file   git commit  git push
+      			 (参见：https://blog.csdn.net/qq_36460164/article/details/79857431)
+    	 
+  ```
+
+* git reset/revert
+
+  ```
+  git reset –soft 不会改变stage区，仅仅将commit回退到了指定的提交 
+  git reset –mixed 不回改变工作区，但是会用指定的commit覆盖stage 区，之前所有暂存的内容都变为为暂存的状态 
+  git reset –hard 使用指定的commit的内容覆盖stage区和工作区。
+  
+  git revert用于反转提交,执行命令时要求工作树必须是干净的.
+  git revert用一个新提交来消除一个历史提交所做的任何修改.
+  git revert是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit
+  ```
+
+* git revert(撤消操作)的格式：
+
+  >  撤销某次操作，此次操作之前的commit都会被保留. git reset 是撤销某次提交，但是此次之后的修改都会被退回到暂存区.
+
+  * 格式
+    git revert [--edit | --no-edit] [-n] [-m parent-number] [-s] <commit>...git revert --continue git revert --quit git revert --abort
+
+  * 示例
+
+    ```
+    git revert HEAD~3：丢弃最近的三个commit，把状态恢复到最近的第四个commit，并且提交一个新的commit来记录这次改变。
+    git revert -n master~5..master~2：丢弃从最近的第五个commit（包含）到第二个（不包含）,但是不自动生成commit，这个revert仅仅修改working tree和index。
+    ```
+
+    `建议，你可以用git revert来撤销已经提交的更改，而git reset用来撤销没有提交的更改`
 
 ## 标签
+
 * git tag v1.0 打标签
 	* 打当前版本
 	* git tag v0.9 f52c633 打历史版本
@@ -97,7 +167,7 @@ sidebar: auto
    不需要输入密码
    
 2. 拷贝公钥至github里。默认公钥文件 ~/.ssh/id_rsa.pub
-   
+  
 3. 如果存在多个账户、需要连接不同仓库。~/.ssh/目录增加文件 config
 
 4. config文件如下
@@ -124,3 +194,14 @@ Host work.scfsoft.com
 * Your branch is ahead of 'origin/master' by 21 commits.
 	*  提交本地内容: git push origin
 	*  删除本地分支: git reset --hard origin/master
+
+*  pull遇到错误：error: Your local changes to the following files would be overwritten by merge:
+  * 保存本地修改
+    * git stash    
+    * git pull  [origin master]
+    * git stash pop  
+  * 否
+    * git reset --hard  
+    * git pull origin master
+
+
