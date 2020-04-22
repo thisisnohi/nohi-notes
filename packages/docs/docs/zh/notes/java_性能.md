@@ -3,8 +3,16 @@
 
 ## 常规
 * JVM
-	* -Xmx，默认1/4物理内存大小
-	* 
+  ```
+  -Xmx   Java Heap最大值，默认值为物理内存的1/4，最佳设值应该视物理内存大小及计算机内其他内存开销而定
+  -Xms   Java Heap初始值，Server端JVM最好将-Xms和-Xmx设为相同值，开发测试机JVM可以保留默认值；
+  
+  -Xmn   Java Heap Young区大小，不熟悉最好保留默认值；
+  
+  -Xss   每个线程的Stack大小，不熟悉最好保留默认值；
+  ```
+
+  
 
 ## Java 应用诊断工具
 
@@ -33,6 +41,7 @@
 jstack是jdk自带的线程堆栈分析工具，使用该命令可以查看或导出 Java 应用程序中线程堆栈信息。
 
 * top -H -p pid 定位 Java 进程和线程
+* mac： ps -M pid查看线程信息
 * jstack -l pid 导出线程栈
 
 ### Jconsole

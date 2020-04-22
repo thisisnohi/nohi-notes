@@ -102,7 +102,19 @@ function genNotesSidebarConfig (title) {
       children: [
         '',
         'name',
+        'java_jvm',
+        'Java_test',
+        'java_基础',
+        'java_性能',
+        '服务线程堆栈查看',
+        'arthas',
+        'database',
+        'datasource',
         'wechat',
+        'nodejs',
+        'ognl',
+        'python_note',
+        'Was',
         'nohi-notes',
       ]
     }

@@ -7,7 +7,7 @@
 
 * 查看端口进程: lsof -i:port
 
-* 定位 Java 进程和线程  top -H -p pid 
+* 定位 Java 进程和线程  top -H -p pid 、Mac： ps -M pid
 
    ```
    以前只是在 linux 机器上使用 top 命令。常用的快键键是:
@@ -92,4 +92,22 @@ zip test.zip test.txt -6
 * 显示记录数：HISTSIZE=200
 
 
+
+### SSH 免密登录
+
+> Ssh 免官登录，允许用户远程登录机器、scp操作，不需要密码
+
+生成密码参见网上：ssh-keygen
+
+```
+注意：
+  sshd为了安全，对属主的目录和文件权限有所要求。如果权限不对，则ssh的免密码登陆不生效。
+  用户目录权限为 755 或者 700，就是不能是77x。
+  .ssh目录权限一般为755或者700。
+  rsa_id.pub 及authorized_keys权限一般为644
+  rsa_id权限必须为600
+解决方案：
+    chmod 700 /home/hadoop 
+
+```
 

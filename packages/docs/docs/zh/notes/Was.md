@@ -9,11 +9,13 @@ alias cdapp='cd /opt/IBM/WebSphere/AppServer/profiles/AppSrv01/installedApps/app
 
 ## 清除WebSphere中缓存
 
+> was清理缓存: https://blog.csdn.net/allan_chan/article/details/9841249
+
 * /home/IBM/WebSphere/AppServer02/profiles/AppSrv01/clearClassCache.sh 
 * /home/IBM/WebSphere/AppServer02/profiles/AppSrv01/temp/node节点/server1 缓存目录
 
 ## 清理was缓存，手工删除应用
-  
+
 1. Stop server
 2. 进入$Profile_install_root/installedApps/$CellName目录,删除你期望删除的应用，例如 TestAsyncInvokerApp.ear
 3. 进入$Profile_install_root/tranlog目录，清空tranlog目录

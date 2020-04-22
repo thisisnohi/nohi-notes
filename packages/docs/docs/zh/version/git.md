@@ -28,6 +28,9 @@ sidebar: auto
 	* 以后推送只需要执行: git push origin master
 
 ## 分支相关
+* git branch -a 查看本地和远程所有分支
+  * git branch -r 查看远程分支
+  * git checkout -b 本地分支名x origin/远程分支名x
 * git checkout -b dev : 创建dev分支
 	* -b 表示创建并切换，相当于git branch dev & git checkout dev
 * git branch:查看当前分支
@@ -37,11 +40,9 @@ sidebar: auto
 * git branch -d dev 删除本地分支
 	* git branch -D <name>
 * git push origin --delete dev　删除远程分支
-
 * 合并分到 dev 至master 
     * git checkout master  切换至master   
     * git merge dev  合并  
-
 * 查看远程库信息，使用git remote -v；
 * 本地新建的分支如果不推送到远程，对其他人就是不可见的；
 * 从本地推送分支，使用git push origin branch-name，如果推送失败，先用git pull抓取远程的新提交；
