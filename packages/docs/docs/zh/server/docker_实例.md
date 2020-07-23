@@ -11,7 +11,10 @@ docker run --name redis -p 6379:6379 -v $HOME/data/redis/data:/data  -d redis re
 	
 	3. docker run -d -p 80:80 --name nginx -v ~/data/nginx/www:/usr/share/nginx/html -v ~/data/nginx/conf/nginx.conf:/etc/nginx/nginx.conf -v ~/data/nginx/logs:/var/log/nginx nginx
 	4.nginx 监听了多个端口，但只有 `80` 端口起效果，如果想要多个端口起效果，则将 `-p 80:80` 换成 `--net host`
-	docker run -d –net=host --name nginx -v ~/data/nginx/www:/usr/share/nginx/html -v ~/data/nginx/conf/nginx.conf:/etc/nginx/nginx.conf -v ~/data/nginx/logs:/var/log/nginx nginx
+	docker run -d --net = host --name nginx2 -v ~/data/nginx/www:/usr/share/nginx/html -v ~/data/nginx/conf/nginx.conf:/etc/nginx/nginx.conf -v ~/data/nginx/logs:/var/log/nginx nginx
+	
+	--net host 只支持linux， Mac、Windows别想了
+	mac下参见(未尝试)：https://windmt.com/2019/08/30/docker-for-mac-network/
 
 ### oracle
 

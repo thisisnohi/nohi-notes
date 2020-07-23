@@ -12,7 +12,16 @@
   -Xss   每个线程的Stack大小，不熟悉最好保留默认值；
   ```
 
-  
+
+```
+### 查看线程、进程
+* top -Hp pid 查看进程下线程信息(mac： ps -M pid查看线程信息)
+  查看到耗时的线程
+* printf "%x\n" threadid 得到十六进制串
+* jstack -l pid 查看堆栈信息
+```
+
+
 
 ## Java 应用诊断工具
 
@@ -24,9 +33,7 @@
 > jps -m -l
 ```
 
-
-
-### jamp
+### jmap
 
 > 可以生成 java 程序的 dump 文件， 也可以查看堆内对象示例的统计信息、查看 ClassLoader 的信息以及 finalizer 队列
 
@@ -34,7 +41,11 @@
 
    jmap -dump:format=b,file=/tmp/dump.dat 21711
 
+* 生成快照：jmap -dump:format=b,file=heapdump.phrof pid
+
 ### jstat -gcutil 332 1000
+
+* jstat -gcutil pid  1000(轮循时间间隔)
 
 ### jstack
 
@@ -48,10 +59,6 @@ jstack是jdk自带的线程堆栈分析工具，使用该命令可以查看或�
 
 * 启动命令增加：-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=12345 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=192.168.0.194"
 * 本机启动jconsole
-
-### jmap
-
-* 生成快照：jmap -dump:format=b,file=heapdump.phrof pid
 
 ### JProfiler
 
@@ -95,14 +102,7 @@ L-Larry_Lau@163.com#40775-3wle0g1uin5c1#0674
 
 *  ./profiler.sh -d 30 -f ./aaa.svg 2488
 
-### 查看线程、进程
 
-* top -Hp pid 查看进程下线程信息
-
-  查看到耗时的线程
-
-* printf "%x\n" threadid 得到十六进制串
-* jstack -l pid 查看堆栈信息
 
 
 

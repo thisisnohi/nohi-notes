@@ -12,4 +12,14 @@
   select * from nls_databas
   ```
 
+* 数据库连接三种方式
+
+  ```
+  jdbc:oracle:thin:@host:port:SID 
+  jdbc:oracle:thin:@//host:port/service_name
+  jdbc:oracle:thin:@//localhost:1521/orcl.city.com 
+  
+  jdbc:oracle:thin:@//215.8.7.66:11521/appdb
+  ```
+
   

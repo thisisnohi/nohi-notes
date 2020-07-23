@@ -91,15 +91,36 @@ zip test.zip test.txt -6
 * 显示时间 export HISTTIMEFORMAT='%F %T'
 * 显示记录数：HISTSIZE=200
 
+### linux时间差8小时
+
+```
+修改时区
+ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime 
+
+VirtualBox 时间不同步
+1. vboxmanage list vms 显示虚拟下所有机器
+2. 关闭/开启同步
+	关闭时间同步：vboxmanage guestproperty set <虚拟机名/虚拟机UUID> --timesync-set-stop
+	打开时间同步：vboxmanage guestproperty set <虚拟机名/虚拟机UUID> --timesync-set-start
+```
+
+
+
 
 
 ### SSH 免密登录
 
 > Ssh 免官登录，允许用户远程登录机器、scp操作，不需要密码
+>
+> 参见：https://blog.csdn.net/BD_fuhong/article/details/103295240
 
 生成密码参见网上：ssh-keygen
 
 ```
+A免密操作B
+在A上执行 ssh-copy-id -i ~/.ssh/id_rsa.pub user@B.B.B.B
+在B的.ssh文件夹下回自动生成 authorized_keys文件
+
 注意：
   sshd为了安全，对属主的目录和文件权限有所要求。如果权限不对，则ssh的免密码登陆不生效。
   用户目录权限为 755 或者 700，就是不能是77x。
@@ -109,5 +130,17 @@ zip test.zip test.txt -6
 解决方案：
     chmod 700 /home/hadoop 
 
+```
+
+
+
+```
+两个机器：A、B
+允许A远程免密访问B
+1. A执行ssh-kengen 一路驾车。执行完成后会有.ssh目录下生成id_rea.pub公钥文件
+2. B 同理执行
+3. A机器执行 ssh-copy-id -i ~/.ssh/id_rsa.pub user@B.B.B.B
+4. 测试：scp A机器某文件 user@B.B.B.B:/home/xx
+5. 执行完后，查看B相应目录是否有文件
 ```
 

@@ -15,6 +15,7 @@ sidebar: auto
 * git reflog用来记录你的每一次命令
 
 ## 删除
+
 * git rm test.txt  
 	* 提交：git push 
 	* 恢复: git checkout -- test.txt
