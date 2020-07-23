@@ -2,7 +2,7 @@ const path = require('path')
 
 module.exports = {
   dest: '../../nohi-notes',
-  base: '/nohi-notes/',
+  base: '/nohi-notes/',   // 项目名 contentpath
   locales: {
     '/': {
       lang: 'en-US',
@@ -43,7 +43,6 @@ module.exports = {
         lastUpdated: 'Last Updated',
         nav: require('./nav/zh'), //直接指向中文
         sidebar: {
-          '/guide/': genSidebarConfig('Guide')
         }
       },
       '/zh/': {
@@ -55,6 +54,8 @@ module.exports = {
         sidebar: {
           '/guide/': genSidebarConfig('指南'),
           '/zh/notes/': genNotesSidebarConfig('笔记'),
+          '/zh/jvm/': genNotesSidebarConfig_java('JVM'),
+          '/zh/html/': genNotesSidebarConfig_hmtl('html'),
         }
       }
     }
@@ -102,6 +103,7 @@ function genNotesSidebarConfig (title) {
       children: [
         '',
         'name',
+        'nohi-notes',
         'Java_test',
         'java_基础',
         'database',
@@ -111,11 +113,37 @@ function genNotesSidebarConfig (title) {
         'nodejs',
         'ognl',
         'python_note',
-        'nohi-notes',
         'RSA_加解密加签',
         'Typora_Note',
         'Was',
         'webservice'
+      ]
+    }
+  ]
+}
+
+function genNotesSidebarConfig_java (title) {
+  return [
+    {
+      title,
+      collapsable: false,
+      children: [
+        'arthas',
+        'java_jvm',
+        'java_性能',
+        'JAVA应用内存问题、程序卡顿简单分析',
+      ]
+    }
+  ]
+}
+
+function genNotesSidebarConfig_hmtl(title) {
+  return [
+    {
+      title,
+      collapsable: false,
+      children: [
+        'vue-ele-ui',
       ]
     }
   ]

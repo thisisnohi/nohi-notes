@@ -1,8 +1,6 @@
-## JVM
+# JVM
 
-
-
-### 参数
+## 参数
 
 > 参考：https://www.cnblogs.com/redcreen/archive/2011/05/04/2037057.html
 

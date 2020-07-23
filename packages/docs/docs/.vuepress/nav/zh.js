@@ -2,6 +2,12 @@ module.exports = [
   {
     text: 'Notes',
     link: '/zh/notes/',
+  },{
+    text: 'JVM',
+    link: '/zh/jvm/',
+  },{
+    text: 'html',
+    link: '/zh/html/',
   },
   {
     text: '版本',
@@ -12,6 +18,12 @@ module.exports = [
       },{
         text: 'SVN',
         link: '/zh/version/svn'
+      },{
+        text: 'MVN',
+        link: '/zh/version/mvn'
+      },{
+        text: 'GRADLE',
+        link: '/zh/version/gradle'
       },
     ]
   },{
@@ -21,6 +33,26 @@ module.exports = [
         text: 'nginx',
         link: '/zh/server/nginx'
       },
+      {
+        text: 'docker',
+        link: '/zh/server/docker'
+      },
+      {
+        text: 'docker_实例',
+        link: '/zh/server/docker_实例'
+      },
+      {
+        text: 'linux',
+        link: '/zh/server/linux'
+      },
+      {
+        text: 'Tomcat',
+        link: '/zh/server/Tomcat'
+      },
+      {
+        text: 'vim',
+        link: '/zh/server/vim'
+      }
     ]
   },
   {
