@@ -44,7 +44,8 @@
       class="footer"
       v-if="data.footer"
     >
-      {{ data.footer }}
+      <span>{{ data.footer }}</span>
+      <span> | <a href="https://beian.miit.gov.cn/" target="_blank">皖ICP备2020020398号</a></span>
     </div>
   </div>
 </template>

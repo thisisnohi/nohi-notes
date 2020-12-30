@@ -6,6 +6,9 @@ module.exports = [
     text: 'JVM',
     link: '/zh/jvm/',
   },{
+    text: 'DB',
+    link: '/zh/db/',
+  },{
     text: 'html',
     link: '/zh/html/',
   },
@@ -30,6 +33,10 @@ module.exports = [
     text: '服务器',
     items: [
       {
+        text: 'linux',
+        link: '/zh/server/linux'
+      },
+      {
         text: 'nginx',
         link: '/zh/server/nginx'
       },
@@ -42,8 +49,8 @@ module.exports = [
         link: '/zh/server/docker_实例'
       },
       {
-        text: 'linux',
-        link: '/zh/server/linux'
+        text: 'es7',
+        link: '/zh/server/es7'
       },
       {
         text: 'Tomcat',

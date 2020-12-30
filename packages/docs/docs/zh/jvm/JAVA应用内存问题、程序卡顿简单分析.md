@@ -1,4 +1,4 @@
-# JAVA应用内存问题、程序卡顿简单分析
+# JAVA应用,内存问题、程序卡顿简单分析
 
 * 要求：
   * Linux运行环境、JDK1.8
@@ -12,6 +12,8 @@ http://127.0.0.1:8099/demo/loop?loopSec=1
 http://127.0.0.1:8099/demo/lock?lockSec=10
 http://127.0.0.1:8099/demo/oom?objNum=6000000
 http://127.0.0.1:8099/demo/oss?loopNum=1000
+
+http://127.0.0.1:8099/demo/loop2?loopSec=10 运行10次，每次间隔10s
 ```
 
 
@@ -41,9 +43,9 @@ http://127.0.0.1:8099/demo/oss?loopNum=1000
   说明
   UID        PID  PPID  C STIME TTY          TIME CMD
   
-18967 23827 为pid
   ```
-  
+
+18967 23827 为pid
 
 ### 查看有问题线程
 
@@ -62,17 +64,14 @@ top -Hp pid 查看进程下线程信息
 18969 nohi      20   0 2976m 172m  13m S  0.0  4.5   0:00.51 java                                                                                                                                             
 18970 nohi      20   0 2976m 172m  13m S  0.0  4.5   0:00.00 java                                                                                                                                             
 18971 nohi      20   0 2976m 172m  13m S  0.0  4.5   0:00.00 java                                                                                                                                             
-18972 nohi      20   0 2976m 172m  13m S  0.0  4.5   0:00.00 java                                                                                                                                             
-
+18972 nohi      20   0 2976m 172m  13m S  0.0  4.5   0:00.00 java    
 ```
+
+​                                                                                                                                         
 
 * arthas： thread 
 
   ![image-20200721154745020](/Users/nohi/Library/Application Support/typora-user-images/image-20200721154745020.png)
-
-  
-
-
 
 ### 打印堆栈
 
@@ -81,22 +80,16 @@ top -Hp pid 查看进程下线程信息
 
 注：
 
-​	 需要进程以nohup 方式启动，kill -3 后会在jar所生成的nohup.out文件中（一般在jar同目录）
+	 需要进程以nohup 方式启动，kill -3 后会在jar所生成的nohup.out文件中（一般在jar同目录）
 
-
-
-查看堆栈信息
+### 查看堆栈信息
 
  1. printf '%x\n'  线程ID
-
-    ```
     $> printf '%x\n' 20168
     4ec8
-    ```
+  2. 线程栈信息中查询线程id （4ec8）
 
-2. 线程栈信息中查询线程id （4ec8）
-
-   ![image-20200721155624560](/Users/nohi/Library/Application Support/typora-user-images/image-20200721155624560.png)
+![image-20200721155624560](/Users/nohi/Library/Application Support/typora-user-images/image-20200721155624560.png)
 
 ​	 
 
@@ -129,26 +122,24 @@ top -Hp pid 查看进程下线程信息
 * 工具：arthas
   * 参考：https://alibaba.github.io/arthas/
   * thread -b 查看线程死锁
+  * sc 查看已加载的类
+    * sc -d *DemoService
+  * sm 查看类的方法
+    * sm demo.service.DemoService
+  * jad 反编译
+    * jad demo.service.DemoService
+  * monitor 监控方法执行情况
+    * monitor -c 10 demo.service.DemoService testLoopAndReturn  -c 统计周期 默认120s
+  * watch 查看方法执行数据
+    * watch demo.service.DemoService testLoopAndReturn "{params,returnObj}" -x 3  -x 深度
 
 ### 作业
 
 * http://127.0.0.1:8099/demo/lock?lockSec=2000
-  * 记录分析过程
+  * 线程堆栈   记录分析过程
 * http://127.0.0.1:8099/demo/oom2?objNum=6000000
   * objNum多少出现oom
   * 记录分析过程，找出问题代码、原因
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

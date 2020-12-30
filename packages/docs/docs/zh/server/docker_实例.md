@@ -1,3 +1,8 @@
+---
+
+sidebar: auto
+---
+
 # docker
 
 ## 安装

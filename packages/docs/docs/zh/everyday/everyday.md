@@ -40,25 +40,28 @@
     java -jar $JETTY_HOME/start.jar --add-to-startd=https,http2
     ```
 
-    
 
 ### Tomcat系统架构与设计模式
 
-
-
 ### servlet3.1 3.0 区别
-
-
 
 ### emebdtomcat springmvc restController启用
 
 * 只启用了根目录，多级目录未启用
 
-
-
 ### Http1.0/2.0
 
-
-
 ### Kotlin
+
+### SPI
+
+
+
+
+
+## PS
+
+> 参考：http://www.51shiping.com/3g/list.asp?id=723
+
+
 

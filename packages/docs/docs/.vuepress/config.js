@@ -56,6 +56,7 @@ module.exports = {
           '/zh/notes/': genNotesSidebarConfig('笔记'),
           '/zh/jvm/': genNotesSidebarConfig_java('JVM'),
           '/zh/html/': genNotesSidebarConfig_hmtl('html'),
+          '/zh/db/': genNotesSidebarConfig_db('db'),
         }
       }
     }
@@ -94,7 +95,7 @@ function genSidebarConfig (title) {
     }
   ]
 }
-
+// Notes
 function genNotesSidebarConfig (title) {
   return [
     {
@@ -103,17 +104,17 @@ function genNotesSidebarConfig (title) {
       children: [
         '',
         'name',
-        'nohi-notes',
         'Java_test',
         'java_基础',
-        'database',
         'datasource',
         'nohi_mac',
         'wechat',
         'nodejs',
         'ognl',
         'python_note',
-        'RSA_加解密加签',
+        '加解密/RSA_加解密加签',
+        '加解密/AES加密解密',
+        'sonar',
         'Typora_Note',
         'Was',
         'webservice'
@@ -144,6 +145,19 @@ function genNotesSidebarConfig_hmtl(title) {
       collapsable: false,
       children: [
         'vue-ele-ui',
+      ]
+    }
+  ]
+}
+// db
+function genNotesSidebarConfig_db(title) {
+  return [
+    {
+      title,
+      collapsable: false,
+      children: [
+        'database',
+        '常用脚本',
       ]
     }
   ]

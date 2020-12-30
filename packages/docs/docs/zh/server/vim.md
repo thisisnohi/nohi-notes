@@ -1,3 +1,7 @@
+---
+
+sidebar: auto
+---
 ## vim
 
 > create by nohi 20191211

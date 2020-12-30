@@ -68,6 +68,8 @@
 	
 	* monitor	方法执行监控
 	
+	  * monitor -c 5 demo.MathGame primeFactors    -c 为周期
+	
 	* watch		方法执行数据观测
 	  
 	  | 参数名称            | 参数说明                                   |

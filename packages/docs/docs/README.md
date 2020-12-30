@@ -3,7 +3,7 @@ home: true
 heroImage: /hero.png
 actionText: Get Started →
 actionLink: /zh/notes/
-footer: MIT Licensed | Copyright © 2018-present NOHI
+footer: MIT Licensed | Copyright © 2020-present NOHI
 ---
 
 <div style="text-align: center">

@@ -186,9 +186,10 @@ sidebar: auto
 ### Portainer
 
 #### 安装
-* 拉取portainer镜像：docker pull docker.io/protainer/portainer
+* 拉取portainer镜像：
+  * docker pull docker.io/portainer/portainer
 * 镜像名打了tag：docker tag docker.io/portainer/portainer portainer
-* 运行,映射端口到9001: docker run -d -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock --name portainer portainer
+* 运行,映射端口到9001: docker run -d -p 9000:9000 --restart=always -v /var/run/docker.sock:/var/run/docker.sock --name portainer portainer/portainer 
 * 打开浏览器: ip:9001
 > 注：
 > 　　如果出现创建用户／密码后，登录异常，查看服务器时间是否太过早（如果太早，则修改，则可以登录）

@@ -27,8 +27,13 @@ sidebar: auto
 	* master推送到远程仓库
 	* -u 第一次推送时，本地与远程进行关联
 	* 以后推送只需要执行: git push origin master
+* 添加本地项目至远程
+  * git init  -> git add . -> git commit -m "初始化项目与远程git相连接"
+  * 连接远程仓库  git remote add origin https://github.com/demo-wx/server.git
+  * 本地内容推送到远程仓库: git push -u origin master （-f）其中-f为强制推送
 
 ## 分支相关
+
 * git branch -a 查看本地和远程所有分支
   * git branch -r 查看远程分支
   * git checkout -b 本地分支名x origin/远程分支名x
@@ -161,9 +166,17 @@ sidebar: auto
 	*  git tag -d v0.9 删除本地
 	*  git push origin :refs/tags/v0.9
 
-
 ## FAQ
+
+### gitbash 免密
+
+* git config --global credential.helper store
+* 需要输入一次用户名密码后，下次执行git就不需要密码
+
+
+
 ### 配置ssh-key免密登录
+
 1. $ ssh-keygen -t rsa -C "youremail@youremail.com"  
    Generating public/private rsa key pair... 三次回车即可生成 ssh key
    不需要输入密码

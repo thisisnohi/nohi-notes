@@ -1,3 +1,8 @@
+---
+
+sidebar: auto
+---
+
 # Tomcat
 
 >  create by nohi 202020606
@@ -139,4 +144,3 @@
     p1=/u51b0/u7bb1 p2=/u6d17/u8863/u673a p3=/u7535/u89c6/u673a
     ```
 
-    
