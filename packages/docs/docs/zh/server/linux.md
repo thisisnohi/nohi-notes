@@ -45,6 +45,88 @@ sidebar: auto
 	
 * 时区：cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
+## centos8切换yum源
+
+* 备份原源配置: mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo_bak
+
+* 下载配置(二选一)
+
+  ```
+  wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
+  curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
+  ```
+
+* 编辑CentOS-AppStream.repo
+
+  ```
+  vi /etc/yum.repos.d/CentOS-AppStream.repo
+  baseurl=http://mirrors.aliyun.com/centos/$releasever/AppStream/$basearch/os/
+  ```
+
+* 保存后执行：
+
+  ```
+  yum clean all
+  yum makecache
+  ```
+
+* 异常：（ repo ‘AppStream‘ 下载元数据失败）
+
+  ```
+  https://blog.csdn.net/lisongyue123/article/details/110822915
+  ```
+
+  * CentOS-Base.repo：
+
+    ```
+    # CentOS-Base.repo
+    [BaseOS]
+    name=CentOS-$releasever - Base
+    #mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=BaseOS&infra=$infra
+    #baseurl=http://mirror.centos.org/$contentdir/$releasever/BaseOS/$basearch/os/
+    baseurl=https://mirrors.aliyun.com/centos/$releasever/BaseOS/$basearch/os/
+    gpgcheck=1
+    enabled=1
+    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+    ```
+
+  * CentOS-AppStream.repo：
+
+    ```
+    # CentOS-AppStream.repo
+    [AppStream]
+    name=CentOS-$releasever - AppStream
+    #mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=AppStream&infra=$infra
+    #baseurl=http://mirror.centos.org/$contentdir/$releasever/AppStream/$basearch/os/
+    baseurl=https://mirrors.aliyun.com/centos/$releasever/AppStream/$basearch/os/
+    gpgcheck=1
+    enabled=1
+    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+    ```
+
+  * CentOS-Extras.repo：
+
+    ```
+    # CentOS-Extras.repo
+    [extras]
+    name=CentOS-$releasever - Extras
+    #mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+    #baseurl=http://mirror.centos.org/$contentdir/$releasever/extras/$basearch/os/
+    baseurl=https://mirrors.aliyun.com/centos/$releasever/extras/$basearch/os/
+    gpgcheck=1
+    enabled=1
+    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+    ```
+
+  * ```
+    # 清除所有缓存文件
+    yum clean all
+    # 制作元数据缓存
+    yum mackecache
+    ```
+
+    
+
 ## 压缩
 
 ```bash
@@ -141,7 +223,7 @@ A免密操作B
 ```
 两个机器：A、B
 允许A远程免密访问B
-1. A执行ssh-kengen 一路驾车。执行完成后会有.ssh目录下生成id_rea.pub公钥文件
+1. A执行ssh-keygen 一路驾车。执行完成后会有.ssh目录下生成id_rea.pub公钥文件
 2. B 同理执行
 3. A机器执行 ssh-copy-id -i ~/.ssh/id_rsa.pub user@B.B.B.B
 4. 测试：scp A机器某文件 user@B.B.B.B:/home/xx
@@ -149,3 +231,42 @@ A免密操作B
 ```
 
  
+
+## 防火墙
+
+* 开启关闭
+
+  ```
+  关闭防火墙： systemctl stop firewalld.service
+  开启： systemctl start firewalld.service
+  	 先用：systemctl unmask firewalld.service 
+     然后：systemctl start firewalld.service
+  开机运行：systemctl enable firewalld.
+  关闭开机运行： systemctl disable firewalld.service
+  ```
+
+* 查看防火墙状态 systemctl status firewalld  或 firewall-cmd --state
+
+* 添加、删除规则
+
+  ```
+  开启端口
+  #（--permanent永久生效，没有此参数重启后失效）
+  #注：可以是一个端口范围，如1000-2000/tcp
+  firewall-cmd --zone=public --add-port=80/tcp --permanent   
+  移除端口
+  firewall-cmd --zone=public --remove-port=80/tcp --permanent
+  firewall-cmd --permanent --remove-port=123/tcp
+  ```
+
+* 查看端口
+
+  * 查看端口列表： firewall-cmd --list-port
+  * 查看端口： firewall-cmd --query-port=80/tcp
+
+* 刷新防火墙
+
+```
+重新加载防火墙 firewall-cmd --reload
+```
+

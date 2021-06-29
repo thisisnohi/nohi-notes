@@ -128,7 +128,6 @@ sidebar: auto
 	* docker network create -d bridge my-bridge 创建网络
 	* docker run -d -p 5003:5003 --network my-bridge --name test3 --link test training/webapp python app.py 指定网络
 	* docker network connect my-bridge test 指定网络连接容器
-	
 ### Docker的镜像和容器
 * docker 依赖的底层技术
 	* namespaces:访问隔离(pid,network,mnt)

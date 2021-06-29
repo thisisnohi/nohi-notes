@@ -4,6 +4,15 @@ sidebar: auto
 
 # GIT NOTE
 
+
+
+```
+mac刷新hosts
+sudo dscacheutil -flushcache
+```
+
+
+
 ## 基本命令
 
 * git remote -v 查看仓库地址
@@ -31,6 +40,42 @@ sidebar: auto
   * git init  -> git add . -> git commit -m "初始化项目与远程git相连接"
   * 连接远程仓库  git remote add origin https://github.com/demo-wx/server.git
   * 本地内容推送到远程仓库: git push -u origin master （-f）其中-f为强制推送
+
+## Push本地代码到远程仓库
+
+* 初始化版本库
+
+  ```
+  $rm -rf .git  // 从别处clone的项目需要删除其版本库
+  $git init
+  ```
+
+* 添加文件到版本库（只是添加到缓冲区）
+
+  ```
+  $git add .  // " . "代表添加文件夹下所有的文件
+  ```
+
+* 把缓冲区中的文件添加到本地版本库
+
+  ```
+  $git commit -m "第一次提交"
+  ```
+
+* 关联本地库和远程库
+
+  ```
+  git remote add origin git@xxx.git(远程仓库地址)
+  ```
+
+* 将代码推送到远程仓库
+
+  ```
+  git push -u origin master  // 第一次推送时
+  git push origin master  // 第一次推送后，直接使用该命令即可推送修改
+  ```
+
+  
 
 ## 分支相关
 
@@ -218,5 +263,4 @@ Host work.scfsoft.com
   * 否
     * git reset --hard  
     * git pull origin master
-
 

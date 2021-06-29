@@ -43,6 +43,14 @@
 
 
 
+## install
+
+mvn install:install-file -Dfile=/Users/nohi/Downloads/dingtalk-sdk-java/taobao-sdk-java-auto_1479188381469-20210101.jar -DgroupId=com.oracle -DartifactId=ojdbc8 -Dversion=12.2.0.1 -Dpackaging=jar
+
+-- DgroupId和DartifactId构成了该jar包在pom.xml的坐标， 对应依赖的DgroupId和DartifactId
+-- Dfile表示需要上传的jar包的绝对路径
+-- Dpackaging 为安装文件的种类
+
 
 
 

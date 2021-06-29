@@ -43,6 +43,10 @@
 
 * 生成快照：jmap -dump:format=b,file=heapdump.phrof pid
 
+* jmap -heap pid:查看堆使用情况
+
+* jmap -histo pid：查看堆中对象数量和大小
+
 ### jstat -gcutil 332 1000
 
 * jstat -gcutil pid  1000(轮循时间间隔)
@@ -59,6 +63,28 @@ jstack是jdk自带的线程堆栈分析工具，使用该命令可以查看或�
 
 * 启动命令增加：-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.port=12345 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=192.168.0.194"
 * 本机启动jconsole
+
+### jinfo
+
+> jinfo可以用来查看正在运行的java运用程序的扩展参数，甚至支持在运行时动态地更改部分参数
+
+* jinfo  pid
+
+* -flag< name >: 打印指定java虚拟机的参数值
+
+  -flag [+|-]< name >：设置或取消指定java虚拟机参数的布尔值
+
+  -flag < name >=< value >：设置指定java虚拟机的参数的值
+
+### jcmd
+
+> 在JDK 1.7之后，新增了一个命令行工具jcmd。它是一个多功能工具，可以用来导出堆，查看java进程，导出线程信息，执行GC等。jcmd拥有jmap的大部分功能，Oracle官方建议使用jcmd代替jmap。
+
+*  jcmd -l 列出当前运行的所有虚拟机
+* jcmd pid help 列出该虚拟机支持的所有命令
+* jcmd pid VM.command_line 
+
+
 
 ### JProfiler
 

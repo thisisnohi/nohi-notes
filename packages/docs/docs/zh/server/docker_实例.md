@@ -24,10 +24,19 @@ docker run --name redis -p 6379:6379 -v $HOME/data/redis/data:/data  -d redis re
 ### oracle
 
 	http://www.thxopen.com/linux/docker/2019/04/17/install-oracle11g-on-docker
-	
-	docker run --privileged --name oracle11g -p 1521:1521 -v /Users/nohi/env/install:/install jaspeen/oracle-11g
-	
+
+
+​	
+​	docker run --privileged --name oracle11g -p 1521:1521 -v /Users/nohi/env/install:/install jaspeen/oracle-11g
+​	
+
 	docker exec -it oracle11g /bin/bash
+
+* oracle11g
+
+  * 搜索oracle:  docker search oracle
+  * 下载： docker pull jaspeen/oracle-11g
+  * docker run --privileged --name oracle11g -p 1521:1521 -v /Users/nohi/data/docker/oracle/install:/install -v /Users/nohi/data/docker/oracle/data:/opt/oracle/data jaspeen/oracle-11g
 
 * Oracle 19c
 
@@ -87,6 +96,8 @@ topic:
 
 ### mysql
 
+- https://www.cnblogs.com/sablier/p/11605606.html
+
 ```
 docker run --name mysql \
     --restart=always \
@@ -95,9 +106,17 @@ docker run --name mysql \
     -v //Users/nohi/data/docker/volumes/mysql/var/lib/mysql:/var/lib/mysql \
     -e MYSQL_ROOT_PASSWORD=nohi1234 \
     -d mysql:8.0.16
+    
+docker run -p 3306:3306 --name mysql \
+-v /usr/local/docker/mysql/conf:/etc/mysql \
+-v /usr/local/docker/mysql/logs:/var/log/mysql \
+-v /usr/local/docker/mysql/data:/var/lib/mysql \
+-v /usr/local/docker/mysql/mysql-files:/var/lib/mysql-files \
+-e MYSQL_ROOT_PASSWORD=nohi1234 \
+-d mysql --lower_case_table_names=1
 ```
 
-
+* mariadb基于GTID主从复制搭建 [https://github.com/AlphaYu/Adnc/tree/master/doc/mariadb]
 
 ## 常用命令
 
@@ -109,5 +128,4 @@ docker run --name mysql \
     * docker rm id/name
 * 文件
     - docker cp /Users/sftp/ftp_files/XETL0303_20190918.DMP  oracle11g:/opt/oracle/exp
-
 
