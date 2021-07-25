@@ -49,7 +49,18 @@ http://npm.taobao.org/mirrors/python/
 ## supervisor
 
 * 启动：supervisord -c /etc/supervisord.d/supervisord.conf
+
 * 启动服务： supervisorctl stop py3
+
+* 问题
+
+  * supervisorctl status： Server requires authentication
+
+    ```shell
+    因为你设置访问账号密码，所以只能先supervisorctl进去
+    ```
+
+    
 
 
 
