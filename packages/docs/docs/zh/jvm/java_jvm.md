@@ -37,3 +37,7 @@
 * -Xmx 最大堆
 * -XX:PermSize 设置持久代(perm gen)初始值 默认
 * -Xmn 新生代
+
+
+
+https://blog.csdn.net/vivisran/article/details/103060508

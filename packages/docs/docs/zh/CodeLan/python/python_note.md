@@ -14,6 +14,7 @@
 ```
 https://www.python.org/ftp/python
 http://npm.taobao.org/mirrors/python/
+https://www.python.org/ftp/python/
 ```
 
 
@@ -49,6 +50,8 @@ http://npm.taobao.org/mirrors/python/
 ## supervisor
 
 * 启动：supervisord -c /etc/supervisord.d/supervisord.conf
+
+* supervisorctl -c /etc/supervisord.d/supervisord.conf
 
 * 启动服务： supervisorctl stop py3
 

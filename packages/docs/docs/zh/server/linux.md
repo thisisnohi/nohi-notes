@@ -270,3 +270,30 @@ A免密操作B
 重新加载防火墙 firewall-cmd --reload
 ```
 
+
+
+## 网络抓包
+
+* 查看网卡: tcpdump -D 
+
+* 抓包：tcpdump -i 网卡 -w  /root/1.pcap  请求完成后，断开命令即可生成文件
+
+* 使用 wireshark分析文件
+
+  * 过滤源ip、目的ip
+
+    ```
+    查找目的地址为192.168.101.8的包，ip.dst==192.168.101.8；查找源地址为ip.src==1.1.1.1
+    ```
+
+  * 端口过滤: tcp.port==80
+
+  * 协议过滤: http
+
+  * 过滤get包
+
+    * ```
+      http.request.method=="GET",过滤post包，http.request.method=="POST
+      ```
+
+  * 连接符and的使用：ip.src==192.168.101.8 and http
