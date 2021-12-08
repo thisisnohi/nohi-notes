@@ -3,7 +3,8 @@
 
 https://thisisnohi.github.io/nohi-notes
 ## 利用vuePress制作个人笔记
-
+> 添加导航：/docs/.vuepress/config.js
+> docs/.vuepress/nav/zh.js
 ## Development
 
 > Please make sure your version of Node.js is greater than 8.

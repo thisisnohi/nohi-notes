@@ -24,7 +24,7 @@ Reactor模型
 
   
 
-![img](./Reactor主从模型示意图.png)
+![img](./ReactorZC_IMG.png)
 
 
 
@@ -44,7 +44,7 @@ Reactor模型
 
 ## 主从Reactor模型
 
-![img](./Reactor主从模型.png)
+![img](./ReactorZC.png)
 
 ## Reactor模型结构图
 
