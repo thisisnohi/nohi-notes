@@ -49,11 +49,13 @@ https://www.python.org/ftp/python/
 
 ## supervisor
 
-* 启动：supervisord -c /etc/supervisord.d/supervisord.conf
+* 启动：
 
-* supervisorctl -c /etc/supervisord.d/supervisord.conf
+  * supervisord -c /etc/supervisord.conf 
 
 * 启动服务： supervisorctl stop py3
+
+  * supervisorctl start dytt
 
 * 问题
 
