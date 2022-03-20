@@ -126,3 +126,18 @@ array([[ 0,  5, 10],
 
 ## 4.6 伪随机数生成
 
+
+
+
+
+![img](https://upload-images.jianshu.io/upload_images/7178691-80e85ae6b9c89ada.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
+
+
+
+![img](https://upload-images.jianshu.io/upload_images/7178691-dcdb66e49e5f70ea.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
+
+
+
+![img](https://upload-images.jianshu.io/upload_images/7178691-97ba09c96dab93a2.png?imageMogr2/auto-orient/strip|imageView2/2/format/webp)
+
+![img](https://upload-images.jianshu.io/upload_images/7178691-6ed04fae3d1178e2.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)

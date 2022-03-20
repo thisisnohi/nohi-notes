@@ -5,6 +5,8 @@
 ## 环境配置
 
 > 参考：https://blog.csdn.net/Lionel_yl/article/details/112611080
+>
+> https://www.jianshu.com/p/ac1ac8cb0973
 
 * 指定安装源： pip3 install numpy -i https://pypi.douban.com/simple/
 * 安装pyenv: brew install pyenv
@@ -152,6 +154,7 @@ https://www.python.org/ftp/python/
 * 创建APP:django-admin startapp TestModel
 
 ### 模型
+
 * python3 manage.py migrate   # 创建表结构
 
 * python3 manage.py makemigrations TestModel  # 让 Django 知道我们在我们的模型有一些变更

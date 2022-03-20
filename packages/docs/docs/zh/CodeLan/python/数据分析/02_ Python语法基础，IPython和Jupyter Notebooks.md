@@ -45,5 +45,26 @@
 
 
 
+## 常用集成
+
+```
+import numpy as np
+from numpy.random import randn
+```
+
+
+
+### 键盘快捷键
+
+![img](https://upload-images.jianshu.io/upload_images/7178691-9ed3866ea25c11f8.png?imageMogr2/auto-orient/strip|imageView2/2/format/webp)
+
+![img](https://upload-images.jianshu.io/upload_images/7178691-e179f5ea00e50691.png?imageMogr2/auto-orient/strip|imageView2/2/w/491/format/webp)
+
+
+
+### 魔术命令
+
+![img](https://upload-images.jianshu.io/upload_images/7178691-c72b11add9b8ccf8.png?imageMogr2/auto-orient/strip|imageView2/2/w/695/format/webp)
+
 ### 2.3 Python语法基础
 
