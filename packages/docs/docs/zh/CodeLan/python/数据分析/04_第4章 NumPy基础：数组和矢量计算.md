@@ -126,9 +126,22 @@ array([[ 0,  5, 10],
 
 ## 4.6 伪随机数生成
 
+## 4.7 随机漫步
 
+```
+import random
+position = 0
+walk = [position]
+steps = 1000
+for i in range(steps):
+    step = 1 if random.randint(0, 1) else -1
+    position += step
+    walk.append(position)
+```
 
-
+```
+ plt.plot(walk[:100])
+```
 
 ![img](https://upload-images.jianshu.io/upload_images/7178691-80e85ae6b9c89ada.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
 

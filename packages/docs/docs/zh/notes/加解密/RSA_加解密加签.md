@@ -355,7 +355,8 @@ public class RSAUtils {
   
       @Test
       public void testRsa验签解密() throws Exception {
-          String pubFile = "/Users/nohi/work/workspaces-nohi/nohithink/thinkinjava/src/test/resources/租赁系统公钥字符串.txt";
+          String pubFile = "/Users/nohi/work/workspaces-nohi/nohithink/thinkinjava/src/test/resources/
+          ";
           String priFile = "/Users/nohi/work/workspaces-nohi/nohithink/thinkinjava/src/test/resources/RSA_PRI.KEY";
   
           String contentFile = "/Users/nohi/work/workspaces-nohi/nohithink/thinkinjava/src/test/resources/密文_data.txt";

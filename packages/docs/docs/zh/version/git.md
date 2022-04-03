@@ -1,5 +1,5 @@
 ---
-sidebar: auto
+sidebar: auto
 ---
 
 # GIT NOTE
@@ -218,6 +218,21 @@ git push origin_repo_b branch_a
     ```
 
     `建议，你可以用git revert来撤销已经提交的更改，而git reset用来撤销没有提交的更改`
+
+### `git reset --hard` 后撤销
+
+> reset --hard 只是移动了HEAD，本地.git/logs目录下仍有HEAD改变的记录
+
+* 查看历史commitid 
+
+  * git log -g
+  * git reflog
+
+* 根据历史commitid创建分支
+
+  * git branch branchName commitId
+
+    
 
 ## 标签
 
