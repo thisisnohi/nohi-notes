@@ -6,9 +6,26 @@ sidebar: auto
 
 ## 安装
 ### redis
-docker run --name redis -p 6379:6379 -v $HOME/data/redis/data:/data  -d redis redis-server --appendonly yes
+
+> https://baijiahao.baidu.com/s?id=1696572376871263000&wfr=spider&for=pc
+
+* docker run --name redis -p 6379:6379 -v $HOME/data/redis/data:/data  -d redis redis-server --appendonly yes
+
+* 增加映射
+
+  ```
+  本地目录： /opt/redis/conf
+  
+  docker run -p 6379:6379 --name redis \
+  -v /opt/redis/confredis.conf:/etc/redis/redis.conf \
+  -v /opt/redis/data:/data \
+  -d redis redis-server /etc/redis/redis.conf --appendonly yes --requirepass "123456"
+  ```
+
+  
 
 ### nginx
+
 	1. docker run --name nginx1 -p 8081:80 -d nginx  (-d设置容器在在后台一直运行)
 	2. docker cp 6dd4380ba708:/etc/nginx/nginx.conf ~/data/nginx/conf
 		拷贝容器内 Nginx 默认配置文件到本地当前目录下的 conf 目录，容器 ID 可以查看 docker ps 命令输入中的第一列：

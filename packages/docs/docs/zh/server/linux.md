@@ -6,6 +6,7 @@ sidebar: auto
 ## Linux
 
 ### 常用命令
+
 * 查看端口占用 netstate -an | grep 9000
 
 * 查看端口进程: lsof -i:port
@@ -43,6 +44,100 @@ sidebar: auto
 			%idle      在internal时间段里，CPU除去等待磁盘IO操作外的因为任何原因而空闲的时间闲置时间(%) (idle/total)*100
 	
 * 时区：cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+### file
+
+```
+-- 删除 ~/file/input/BERS/ 一年前{365}数据 {} 前后有空格
+find ~/file/input/BERS/ -name "*.zip" -mtime +365 -exec rm {} \;
+```
+
+## shell
+
+* 脚本路径
+
+  ```shell
+  BASE_PATH=$(cd `dirname $0`; pwd)
+  ```
+
+* start 
+
+  ```shell
+  #!/bin/sh
+  
+  pwd
+  BASEPATH=$(cd `dirname $0`;pwd)
+  cd $BASEPATH
+  echo currentPath:$BASEPATH
+  pwd
+  JAR_NAME=chss-rhwzh.jar
+  echo start app $JAR_NAME
+  export JAVA_OPT="-server -Xms1024m -Xmx2048m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=512m"
+  nohup java $JAVA_OPT -jar ${JAR_NAME}  > /dev/null 2>&1 &
+  ```
+
+* stop
+
+  * 指定jar
+
+  ```
+  jarName=chss-rhwzh.jar
+  echo "jps -ml|grep ${jarName} | grep -v grep | awk '{print $1}'"
+  LIVEPID=`jps -ml|grep ${jarName}  |grep -v grep | awk '{print $1}'`
+  echo "PID ${LIVEPID}"
+  if [ -z $LIVEPID ];then
+      echo "pid is null"
+  else
+      echo $LIVEPID
+      kill -9 $LIVEPID
+  fi
+  ```
+
+  * 选择jar
+
+  ```
+  #!/bin/bash
+  
+  JAR_NAME=$1
+  if [ -z "$JAR_NAME" ];then
+    echo "JAR_NAME is empty, please input a jar name"
+    exit 100
+  fi
+  BASE_PATH=$(cd `dirname $0`; pwd)
+  echo $BASE_PATH
+  echo "获取[$JAR_NAME]获取进程列表"
+  
+  # 获取进程列表
+  P_LIST=`jps -l | grep $JAR_NAME`
+  echo "$P_LIST"
+  
+  # 输出循环列表
+  i=0
+  echo "$P_LIST"| while read line
+  do
+    ((i++))
+    echo "[$i] $line"
+  done
+  
+  P_INDEX=1
+  read -p "Please select INDEX of Progress[1]: " P_INDEX
+  
+  if [ "$P_INDEX" == "" ]; then
+    P_INDEX=1
+  fi
+  
+  i=0
+  echo "$P_LIST"| while read line
+  do
+    ((i++))
+    if [ "$i" == "$P_INDEX" ];then
+          echo "kill [$i] $line"
+          echo $line | awk '{print $1}' | xargs kill -9
+    fi
+  done
+  ```
+
+  
 
 ## centos8切换yum源
 

@@ -31,17 +31,20 @@ sudo dscacheutil -flushcache
 
 ## 远程仓库
 * git remote add origin git@github.com:michaelliao/learngit.git
-	* 关联一个远程库
+  * 关联一个远程库
 * git push -u origin master  
-	* master推送到远程仓库
-	* -u 第一次推送时，本地与远程进行关联
-	* 以后推送只需要执行: git push origin master
+  * master推送到远程仓库
+  * -u 第一次推送时，本地与远程进行关联
+  * 以后推送只需要执行: git push origin master
 * 添加本地项目至远程
   * git init  -> git add . -> git commit -m "初始化项目与远程git相连接"
   * 连接远程仓库  git remote add origin https://github.com/demo-wx/server.git
   * 本地内容推送到远程仓库: git push -u origin master （-f）其中-f为强制推送
 
-## Push
+### 修改远程仓库地址
+
+* git remote -v 查看仓库地址
+* git remote set-url origin  git@github.com/XXX.git
 
 ### 本地代码到远程仓库
 
