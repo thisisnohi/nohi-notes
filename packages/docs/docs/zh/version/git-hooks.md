@@ -25,6 +25,13 @@
   /home/gitlab/data:/var/opt/gitlab
   ```
 
+**坑**
+
+```
+10080 访问：strict-origin-when-cross-origin
+使用其他商品访问：http://10.0.0.210:82
+```
+
 
 
 ## hooks
