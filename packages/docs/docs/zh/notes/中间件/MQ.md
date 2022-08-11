@@ -136,6 +136,8 @@ e,启动管理器平台
   strmqcfg
 
 * "dspmqfls" command to convert between real and transformed object names.	
+* 向队列放消息： `amqsput 队列名称 队列管理器名称`
+* 从队列取消息： `amqsget 队列名称 队列管理器名称`
 
 
 
@@ -321,7 +323,7 @@ strmqm QMTEST2
   
   --关闭认证
   ALTER QMGR CHLAUTH(DISABLED) 
-  REFRESH SECURITY TYPE(CONNAUTH
+  REFRESH SECURITY TYPE(CONNAUTH)
   
   20220802 通过如下修改，成功连接mq
   ALTER CHANNEL(SYSTEM.DEF.SVRCONN) CHLTYPE(SVRCONN) MCAUSER('')  或者MCAUSER('mqm')
