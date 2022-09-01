@@ -1,6 +1,6 @@
 module.exports = [
   {
-    text: 'Notes',
+    text: 'NOTES',
     link: '/zh/notes/',
   },{
     text: 'JVM',
@@ -9,7 +9,7 @@ module.exports = [
     text: 'DB',
     link: '/zh/db/',
   },{
-    text: 'html',
+    text: 'HTML',
     link: '/zh/html/',
   },
   {

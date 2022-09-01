@@ -1,4 +1,5 @@
 # 性能
+
 > 20190130 https://www.ibm.com/developerworks/cn/java/j-lo-performance-tuning-practice/index.html
 
 ## 常规
@@ -20,6 +21,17 @@
 * printf "%x\n" threadid 得到十六进制串
 * jstack -l pid 查看堆栈信息
 ```
+
+* jdk8
+
+  ```
+  https://blog.csdn.net/vivisran/article/details/103060508
+  java -XX:+PrintFlagsFinal -version | grep MetaspaceSize查看metaspacesize
+  fullgc:
+  	-Xms4096m -Xmx4096m -XX:MetaspaceSize=512m -XX:MaxMetaspaceSize=512m
+  ```
+
+  
 
 
 

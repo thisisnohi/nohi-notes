@@ -95,7 +95,7 @@ function genSidebarConfig (title) {
     }
   ]
 }
-// Notes
+// NOTES
 function genNotesSidebarConfig (title) {
   return [
     {
@@ -106,18 +106,18 @@ function genNotesSidebarConfig (title) {
         'name',
         'Java_test',
         'java_基础',
-        'datasource',
-        'nohi_mac',
-        'wechat',
         'nodejs',
         'ognl',
-        'python_note',
         '加解密/RSA_加解密加签',
         '加解密/AES加密解密',
+        '分库分表/分库分表',
         'sonar',
         'Typora_Note',
         'Was',
-        'webservice'
+        'webservice',
+        'wechat',
+        'wx小程序',
+        'r7800'
       ]
     }
   ]
@@ -157,6 +157,7 @@ function genNotesSidebarConfig_db(title) {
       collapsable: false,
       children: [
         'database',
+        'mysql',
         '常用脚本',
       ]
     }

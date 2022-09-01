@@ -115,7 +115,19 @@ top -Hp pid 查看进程下线程信息
   *  -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/home/nohi/demo  应用启动后出现内存异常则会自动导出dump文件，默认的文件名是：java_pid<进程号>.hprof
   * jmap -dump:format=b,file=/home/nohi/demo/dump.dat  pid
   * arthas: heapdump /home/nohi/demo/dump.hprof
+  
 * MAT 打开dump文件
+
+* 导出dump文件
+
+  ```
+  1.查看内存状态
+  jmap -heap 进程ID
+  2.查看JVM堆中对象详情占用情况
+  jmap -histo 进程ID
+  ```
+
+  
 
 ## 其它
 

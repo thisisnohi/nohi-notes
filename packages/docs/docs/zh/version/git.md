@@ -31,17 +31,22 @@ sudo dscacheutil -flushcache
 
 ## 远程仓库
 * git remote add origin git@github.com:michaelliao/learngit.git
-	* 关联一个远程库
+  * 关联一个远程库
 * git push -u origin master  
-	* master推送到远程仓库
-	* -u 第一次推送时，本地与远程进行关联
-	* 以后推送只需要执行: git push origin master
+  * master推送到远程仓库
+  * -u 第一次推送时，本地与远程进行关联
+  * 以后推送只需要执行: git push origin master
 * 添加本地项目至远程
   * git init  -> git add . -> git commit -m "初始化项目与远程git相连接"
   * 连接远程仓库  git remote add origin https://github.com/demo-wx/server.git
   * 本地内容推送到远程仓库: git push -u origin master （-f）其中-f为强制推送
 
-## Push本地代码到远程仓库
+### 修改远程仓库地址
+
+* git remote -v 查看仓库地址
+* git remote set-url origin  git@github.com/XXX.git
+
+### 本地代码到远程仓库
 
 * 初始化版本库
 
@@ -75,7 +80,28 @@ sudo dscacheutil -flushcache
   git push origin master  // 第一次推送后，直接使用该命令即可推送修改
   ```
 
-  
+
+### git 上传代码到指定仓库_从一个git仓库提交代码到另一个git仓库
+
+> 参考：https://blog.csdn.net/weixin_39961855/article/details/111513676
+
+```
+假如仓库repo_a当前位于branch_a，要求将branch_a的整个数据(包括提交历史)全部提取出来，并建立一个新的仓库repo_b。这里假设仓库repo_b已经被建立。
+git remote add基本语法如下。name和url是必须的。
+git remote add [-t ] [-m ] [-f] [--[no-]tags] [--mirror=]
+
+1、 将仓库repo_b的URL添加到工作仓库的remote。
+git remote add origin_repo_b git@server_ip:/path/repo_b.git
+(origin_repo_b:自己起的名字，只要不与现有的remote名重复即可)
+(git@server_ip:/path/repo_b.git:repo_b的远程路径)
+
+2、将代码推送到远程repo_b。
+git push origin_repo_b branch_a
+(origin_repo_b:远程仓库repo_b的名字)
+(branch_a:仓库repo_a的的branch_a分支)
+```
+
+
 
 ## 分支相关
 
@@ -195,6 +221,21 @@ sudo dscacheutil -flushcache
     ```
 
     `建议，你可以用git revert来撤销已经提交的更改，而git reset用来撤销没有提交的更改`
+
+### `git reset --hard` 后撤销
+
+> reset --hard 只是移动了HEAD，本地.git/logs目录下仍有HEAD改变的记录
+
+* 查看历史commitid 
+
+  * git log -g
+  * git reflog
+
+* 根据历史commitid创建分支
+
+  * git branch branchName commitId
+
+    
 
 ## 标签
 

@@ -7,6 +7,7 @@ sidebar: auto
 > 介绍：https://www.cnblogs.com/s-b-b/p/8533932.html
 
 ## 配置
+
 ### 镜像加速
 
 *  /etc/docker/daemon.json（Linux）
@@ -28,19 +29,19 @@ sidebar: auto
 	* 创建一个docker容器，返回容器的id: docker create 镜像名字
 	* 运行docker容器：docker start 
 	* 新建容器且运行，也就是上面两步一块执行: docker run 镜像名字
-		* 如果镜像不在，从源拉去
-		* p：指定映射端口，如运行一个nginx服务，那么我可以设置 -p 8080:80来把本地的8080端口映射到容器里的80端口。
-		* d：容器作为一个守护进程去进行运行，也就是保持后台运行，运行后会返回cotainer id。
+	  * 如果镜像不在，从源拉去
+	  * p：指定映射端口，如运行一个nginx服务，那么我可以设置 -p 8080:80来把本地的8080端口映射到容器里的80端口。
+	  * d：容器作为一个守护进程去进行运行，也就是保持后台运行，运行后会返回cotainer id。
 	* 停止容器: docker stop  容器id
-	* 
 	* 查看进程: docker ps
-		* docker ps -a
+	  * docker ps -a
+	* 查看容器配置
+	  * docker inspect id/name
 	* 删除容器: docker rm 容器id
 * 容器与镜像间的操作
 	* 终端连接到容器: docker exec -i -t 容器id bash
 	* 复制文件到容器里面: docker cp index.html 镜像id://usr/share/nginx/html
 	* 保存更改并生成为一个新的image文件: docker commit -m "mess" 镜像id 镜像名字
-
 * 查看容器内的标准输出: docker logs `CONTAINER ID` / docker logs `NAMES`
 	* docker logs -f id/name 类似tail -f
 * 停止容器: docker stop `CONTAINER ID` / docker stop `NAMES`
@@ -54,7 +55,6 @@ sidebar: auto
 * docker start id/name 重启
 * docker rm id/name 删除容器
 	* 删除容器时，容器必须是停止状态.
-
 * 查看端口映射: docker port id/name
 * 查看容器进程: docker top  id/name
 * 查看容器底层信息: docker inspect id/name

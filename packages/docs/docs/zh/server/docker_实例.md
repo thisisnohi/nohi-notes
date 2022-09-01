@@ -1,5 +1,4 @@
 ---
-
 sidebar: auto
 ---
 
@@ -7,9 +6,26 @@ sidebar: auto
 
 ## 安装
 ### redis
-docker run --name redis -p 6379:6379 -v $HOME/data/redis/data:/data  -d redis redis-server --appendonly yes
+
+> https://baijiahao.baidu.com/s?id=1696572376871263000&wfr=spider&for=pc
+
+* docker run --name redis -p 6379:6379 -v $HOME/data/redis/data:/data  -d redis redis-server --appendonly yes
+
+* 增加映射
+
+  ```
+  本地目录： /opt/redis/conf
+  
+  docker run -p 6379:6379 --name redis \
+  -v /opt/redis/confredis.conf:/etc/redis/redis.conf \
+  -v /opt/redis/data:/data \
+  -d redis redis-server /etc/redis/redis.conf --appendonly yes --requirepass "123456"
+  ```
+
+  
 
 ### nginx
+
 	1. docker run --name nginx1 -p 8081:80 -d nginx  (-d设置容器在在后台一直运行)
 	2. docker cp 6dd4380ba708:/etc/nginx/nginx.conf ~/data/nginx/conf
 		拷贝容器内 Nginx 默认配置文件到本地当前目录下的 conf 目录，容器 ID 可以查看 docker ps 命令输入中的第一列：
@@ -24,13 +40,19 @@ docker run --name redis -p 6379:6379 -v $HOME/data/redis/data:/data  -d redis re
 ### oracle
 
 	http://www.thxopen.com/linux/docker/2019/04/17/install-oracle11g-on-docker
-
-
-​	
-​	docker run --privileged --name oracle11g -p 1521:1521 -v /Users/nohi/env/install:/install jaspeen/oracle-11g
-​	
-
+	
+	-- 命令：
+	docker run --privileged --name oracle11g -p 1521:1521 -v /Users/nohi/env/install:/install jaspeen/oracle-11g
+	
+	-- 安装源文件 /root/soft/oracle
+	-- 最好增加数据文件映射： 目标/opt/oracle/app/oradata
+	-- 启动命令  文件映射 /root/soft/oracle:/install  /opt/oracle:/home/oracle 
+	docker run --privileged --name oracle11g -p 1521:1521 -v /opt/oracle/oradata:/opt/oracle/app/oradata -v /opt/oracle/userhome:/home/oracle  -v /root/soft/oracle:/install jaspeen/oracle-11g
+	
 	docker exec -it oracle11g /bin/bash
+
+
+
 
 * oracle11g
 
@@ -99,21 +121,26 @@ topic:
 - https://www.cnblogs.com/sablier/p/11605606.html
 
 ```
+docker pull mysql:5.7   # 拉取 mysql 5.7
+docker pull mysql       # 拉取最新版mysql镜像
+
 docker run --name mysql \
     --restart=always \
     -p 3306:3306 \
-    -v /Users/nohi/data/docker/volumes/mysql/conf.d:/etc/mysql/conf.d \
-    -v //Users/nohi/data/docker/volumes/mysql/var/lib/mysql:/var/lib/mysql \
+    -v /opt/mysql/conf.d:/etc/mysql/conf.d \
+    -v /opt/mysql/var/lib/mysql:/var/lib/mysql \
     -e MYSQL_ROOT_PASSWORD=nohi1234 \
     -d mysql:8.0.16
     
 docker run -p 3306:3306 --name mysql \
--v /usr/local/docker/mysql/conf:/etc/mysql \
--v /usr/local/docker/mysql/logs:/var/log/mysql \
--v /usr/local/docker/mysql/data:/var/lib/mysql \
--v /usr/local/docker/mysql/mysql-files:/var/lib/mysql-files \
+-v /opt/mysql/conf:/etc/mysql \
+-v /opt/mysql/logs:/var/log/mysql \
+-v /opt/mysql/data:/var/lib/mysql \
+-v /opt/mysql/mysql-files:/var/lib/mysql-files \
 -e MYSQL_ROOT_PASSWORD=nohi1234 \
 -d mysql --lower_case_table_names=1
+
+登录：mysql -uroot -p123456
 ```
 
 * mariadb基于GTID主从复制搭建 [https://github.com/AlphaYu/Adnc/tree/master/doc/mariadb]
