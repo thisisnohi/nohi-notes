@@ -2,7 +2,8 @@
 sidebar: auto
 ---
 
-# nginx 安装windows服务
+## nginx 安装windows服务
+
 　以windows服务方式启动nginx
 ::: danger 坑
 以服务方式启动，不支持restart，重启服务会生成两条exe在进程列表中

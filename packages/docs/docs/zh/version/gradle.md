@@ -1,5 +1,9 @@
 ## Gradle
 
+* 参照：Gradle下载安装教程 https://zhuanlan.zhihu.com/p/460771551
+
+  
+
 ```
 gradle projects 查看工程信息
 gradle tasks 查看任务信息
