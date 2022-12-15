@@ -1,8 +1,9 @@
 # NOHI Notes
 [![aaa](https://img.shields.io/badge/thisisnohi-nohi--notes-brightgreen)](http://github.com/thisisnohi/nohi-notes)
-仓库地址：http://github.com/thisisnohi/nohi-notes
-主页: https://thisisnohi.github.io
-项目主页: https://thisisnohi.github.io/nohi-notes
+
+* 仓库地址：http://github.com/thisisnohi/nohi-notes
+* 主页: https://thisisnohi.github.io
+* 项目主页: https://thisisnohi.github.io/nohi-notes
 
 ## 利用vuePress制作个人笔记
 * docs/zh/notes目录下新增xxx.md文件

@@ -5,6 +5,8 @@ import { defaultTheme } from "@vuepress/theme-default";
 import { head, navbarEn, navbarZh, sidebarEn, sidebarZh } from './configs';
 // @ts-ignore
 import { searchPlugin } from '@vuepress/plugin-search'
+// @ts-ignore
+import { backToTopPlugin } from '@vuepress/plugin-back-to-top'
 
 export default defineUserConfig({
   // set site base to default value
@@ -30,6 +32,7 @@ export default defineUserConfig({
   },
 
   plugins: [
+    backToTopPlugin(),
     // 本地搜索
     searchPlugin({
       locales: {
@@ -45,7 +48,7 @@ export default defineUserConfig({
 
   // 默认主题
   theme: defaultTheme({
-    repo: "https://github.com/thisisnohi/thisisnohi.github.io", //github仓库地址
+    repo: "https://github.com/thisisnohi/nohi-notes.git", //github仓库地址
     editLink: false,
     lastUpdatedText: "最后更新时间",
     contributorsText: "作者",

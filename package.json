@@ -24,6 +24,7 @@
   ],
   "devDependencies": {
     "@vuepress/client": "2.0.0-beta.59",
+    "@vuepress/plugin-back-to-top": "2.0.0-beta.59",
     "@vuepress/plugin-docsearch": "2.0.0-beta.59",
     "@vuepress/utils": "2.0.0-beta.59",
     "tsconfig-vuepress": "^4.0.4",
