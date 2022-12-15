@@ -18,10 +18,11 @@
 ```
 
 ## 运行
-* 运行：yarn run docs:dev
-* 编译: yarn run docs:build
-* 发布主页：github pages: yarn deploy-github
-* 发布主页：github pages: yarn deploy-gh-pages
+* 运行： `yarn run docs:dev`
+* 编译: `yarn run docs:build`
+* 发布主页： `yarn deploy_index`
+* 发布项目主页：`yarn deploy_nohi-notes`
+* 发布主页和项目主页：`yarn deploy-github`
 
 ## Deploy
 ```

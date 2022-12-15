@@ -9,7 +9,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "deploy-github": "GH=1 yarn docs:build && bash scripts/deploy-gh.sh"
+    "docs:build2": "vuepress build docs docs/.vuepress/config_nohi-notes.ts",
+    "deploy_index": "bash scripts/deploy-index.sh",
+    "deploy_nohi-notes": "bash scripts/deploy_nohi-notes.sh",
+    "deploy-github": "bash scripts/deploy-index.sh && bash scripts/deploy_nohi-notes.sh"
   },
   "keywords": [
     "NOHI",

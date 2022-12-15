@@ -5,7 +5,7 @@ import { searchPlugin } from '@vuepress/plugin-search'
 
 export default defineUserConfig({
   // set site base to default value
-  base: '/',
+  base: '/nohi-notes/',
   // extra tags in `<head>`
   head,
   lang: "zh-CN",
@@ -69,13 +69,13 @@ export default defineUserConfig({
        * Chinese locale config
        */
       '/zh/': {
+        selectLanguageName: '简体中文',
+        selectLanguageText: '选择语言',
+        selectLanguageAriaLabel: '选择语言',
         // navbar
         navbar: navbarZh,
         // sidebar
         sidebar: sidebarZh,
-        selectLanguageName: '简体中文',
-        selectLanguageText: '选择语言',
-        selectLanguageAriaLabel: '选择语言',
         // page meta
         editLinkText: '在 GitHub 上编辑此页',
         lastUpdatedText: '上次更新',

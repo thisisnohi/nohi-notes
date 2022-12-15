@@ -4,7 +4,7 @@
 set -e
 
 # 生成静态文件
-yarn run docs:build
+yarn run docs:build2
 
 # 进入生成的文件夹
 cd docs/.vuepress/dist
@@ -24,7 +24,6 @@ git commit -m 'deploy'
 
 # 把上面的 <USERNAME> 换成你自己的 Github 用户名，<REPO> 换成仓库名，比如我这里就是：
 # master为项目，github-pages为编译后的html页面
-git push -f git@github.com:thisisnohi/thisisnohi.github.io.git  master:github-pages
 git push -f git@github.com:thisisnohi/nohi-notes.git master:gh-pages
 
 cd -

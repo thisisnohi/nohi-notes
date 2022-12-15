@@ -1,5 +1,4 @@
 import type { NavbarConfig } from '@vuepress/theme-default'
-import { version } from '../meta.js'
 import { jvmItems } from "../items/jvmItems";
 import { springItems } from "../items/springItems";
 import { dbItems } from "../items/dbItems";
