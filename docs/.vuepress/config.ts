@@ -1,6 +1,9 @@
+// @ts-ignore
 import { defineUserConfig } from "vuepress";
+// @ts-ignore
 import { defaultTheme } from "@vuepress/theme-default";
 import { head, navbarEn, navbarZh, sidebarEn, sidebarZh } from './configs';
+// @ts-ignore
 import { searchPlugin } from '@vuepress/plugin-search'
 
 export default defineUserConfig({

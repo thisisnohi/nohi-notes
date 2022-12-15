@@ -6,6 +6,8 @@ specifiers:
   '@vuepress/plugin-docsearch': 2.0.0-beta.59
   '@vuepress/plugin-search': 2.0.0-beta.59
   '@vuepress/theme-default': 2.0.0-beta.59
+  '@vuepress/utils': 2.0.0-beta.59
+  tsconfig-vuepress: ^4.0.4
   vue: ^3.2.45
   vuepress: 2.0.0-beta.59
 
@@ -17,6 +19,8 @@ dependencies:
 devDependencies:
   '@vuepress/client': registry.npmmirror.com/@vuepress/client/2.0.0-beta.59
   '@vuepress/plugin-docsearch': registry.npmmirror.com/@vuepress/plugin-docsearch/2.0.0-beta.59_tbpndr44ulefs3hehwpi2mkf2y
+  '@vuepress/utils': registry.npmmirror.com/@vuepress/utils/2.0.0-beta.59
+  tsconfig-vuepress: registry.npmmirror.com/tsconfig-vuepress/4.0.4
   vue: registry.npmmirror.com/vue/3.2.45
   vuepress: registry.npmmirror.com/vuepress/2.0.0-beta.59_zuhh5cekyzsqox63zj3ccba2ny
 
@@ -2095,6 +2099,12 @@ packages:
     resolution: {integrity: sha512-+1iDGY6NmOGidq7i7xZGA4cm8DAa6fqdYcvO5Z6yBevH++Bdo9Qt/mN0TzHUgcCcKv1gmh9+W5dHqz8pMWbCbg==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/ts-debounce/-/ts-debounce-4.0.0.tgz}
     name: ts-debounce
     version: 4.0.0
+
+  registry.npmmirror.com/tsconfig-vuepress/4.0.4:
+    resolution: {integrity: sha512-nK1NrYC1T0csgp0AM9qwcGSCRnmoapjrP4FrnnTaaTpaBzqJXbRrtrwHinOKHH2qKoHilurB/z1n0XBX4BlMcQ==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/tsconfig-vuepress/-/tsconfig-vuepress-4.0.4.tgz}
+    name: tsconfig-vuepress
+    version: 4.0.4
+    dev: true
 
   registry.npmmirror.com/uc.micro/1.0.6:
     resolution: {integrity: sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==, registry: https://registry.npm.taobao.org/, tarball: https://registry.npmmirror.com/uc.micro/-/uc.micro-1.0.6.tgz}

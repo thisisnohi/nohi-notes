@@ -1,11 +1,12 @@
-import type { NavbarConfig } from '@vuepress/theme-default'
-import { version } from '../meta.js'
+// @ts-ignore
+import type { NavbarConfig } from "@vuepress/theme-default";
 import { jvmItems } from "../items/jvmItems";
 import { dbItems } from "../items/dbItems";
 import { htmlItems } from "../items/htmlItems";
 import { versionItems } from "../items/versionItems";
 import { serverItems } from "../items/serverItems";
 import { springItems } from "../items/springItems";
+// import { version } from '../meta.js'
 
 // 导航配置
 export const navbarZh: NavbarConfig = [
@@ -43,5 +44,9 @@ export const navbarZh: NavbarConfig = [
   }, {
     text: "服务器",
     children: serverItems,
+  },
+  {
+    text: `VuePress2参考指南`,
+    link: "https://v2.vuepress.vuejs.org/zh/",
   },
 ]
