@@ -7,6 +7,13 @@ sidebar: auto
 
 ### 常用命令
 
+#### 文件
+
+* 查看文件inode `df -ia`
+* 查看文件名柄: lsof -i:port
+
+#### 其他
+
 * 查看端口占用 netstate -an | grep 9000
 
 * 查看端口进程: lsof -i:port

@@ -127,3 +127,15 @@
 
 * Okhttp中通过okhttpClient对象是通过Builder对象初始化出来的，**此处Builder的用法是建造者模式，建造者模式主要是分离出外部类的属性初始化，而初始化属性交给了内部类Buidler类，这么做的好处是外部类不用关心属性的初始化**
 * 初始化的时候有`interceptors`、`networkInterceptors`两种拦截器的初始化，还有`dispatcher(分发器)`的初始化，以及后面需要讲到的`cache(缓存)`初始化等
+
+* 指定链接池
+
+  ```
+  ConnectionPool connectionPool = new ConnectionPool(5,5*60,TimeUnit.SECONDS);
+  // 1.创建okhttp客户端
+  OkHttpClient client = new OkHttpClient.Builder().connectionPool(connectionPool).readTimeout(1000, TimeUnit.MILLISECONDS)
+                  .writeTimeout(1000, TimeUnit.MILLISECONDS)
+                  .build();
+  ```
+
+  

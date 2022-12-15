@@ -255,7 +255,7 @@
 * 重要变量
 
   ```
-  # InstanceRegistryProperties.expectedNumberOfClientsSendingRenews
+  # InstanceR	egistryProperties.expectedNumberOfClientsSendingRenews
   this.expectedNumberOfRenewsPerMin = count * 2;  
   this.numberOfRenewsPerMinThreshold =(int) (this.expectedNumberOfRenewsPerMin * serverConfig.getRenewalPercentThreshold());
   # EurekaServerConfigBean.renewalPercentThreshold

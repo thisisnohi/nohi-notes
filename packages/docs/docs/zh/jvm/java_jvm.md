@@ -41,3 +41,27 @@
 
 
 https://blog.csdn.net/vivisran/article/details/103060508
+
+
+
+
+
+
+
+|            |  GC  |       ERROR        |
+| :--------: | :--: | :----------------: |
+| 程序计数器 |  无  |         无         |
+|     栈     |  无  | StackOverflowError |
+| 本地方法栈 |  无  | StackOverflowError |
+|     堆     |  GC  |        OOM         |
+|   无空间   |  GC  |        OOM         |
+
+
+
+## -XX -X 区别
+
+| 配置 参数 | 类型         | 说明                                                         | 举例                                                         |
+| --------- | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| -X        | non-standard | 非标准参数。这些参数不是虚拟机规范规定的。因此，不是所有VM的实现(如:HotSpot,JRockit,J9等)都支持这些配置参数。 | -Xmx、-Xms、-Xmn、-Xss                                       |
+| -XX       | not-stable   | 不稳定参数。这些参数是虚拟机规范中规定的。这些参数指定虚拟机实例在运行时的各种行为，从而对虚拟机的运行时性能有很大影响。 | -XX:MetaspaceSize=1g<br>-XX:SurvivorRatio<br>-XX:+UseParNewGc |
+

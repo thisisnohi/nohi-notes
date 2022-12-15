@@ -7,7 +7,7 @@ footer: MIT Licensed | Copyright © 2020-present NOHI
 ---
 
 <div style="text-align: center">
-   
+
 </div>
 
 <div class="features">
