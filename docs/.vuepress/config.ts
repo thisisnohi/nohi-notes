@@ -17,12 +17,12 @@ export default defineUserConfig({
     '/': {
       lang: 'en-US',
       title: 'NOHI Notes',
-      description: 'NOHI Notes',
+      description: 'NOHI Notes with Vuepress 2.0.0-beta',
     },
     '/zh/': {
       lang: 'zh-CN',
       title: 'NOHI 笔记',
-      description: '使用VuePress制作的个人笔记',
+      description: '使用VuePress 2.0.0-beta 制作的个人笔记',
     },
   },
 
