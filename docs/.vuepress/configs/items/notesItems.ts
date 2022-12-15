@@ -1,0 +1,28 @@
+export const notesItems = [
+  {
+    text: '笔记',
+    children: [
+      '/zh/notes/README.md',
+      '/zh/notes/name.md',
+      '/zh/notes/DesignPattern.md',
+      '/zh/notes/Java_test.md',
+      '/zh/notes/java_基础.md',
+      '/zh/notes/nodejs.md',
+      '/zh/notes/ognl.md',
+      '/zh/notes/加解密/RSA_加解密加签.md',
+      '/zh/notes/加解密/AES加密解密.md',
+      '/zh/notes/分库分表/分库分表.md',
+      '/zh/notes/分库分表/Mycat安装与使用.md',
+      '/zh/notes/分库分表/Mycat使用结果说明.md',
+      '/zh/notes/分库分表/MyCat1.6安装.md',
+      '/zh/notes/分库分表/mariadb基于GTID主从复制搭建.md',
+      '/zh/notes/sonar.md',
+      '/zh/notes/Typora_Note.md',
+      '/zh/notes/Was.md',
+      '/zh/notes/webservice.md',
+      '/zh/notes/wechat.md',
+      '/zh/notes/wx小程序.md',
+      '/zh/notes/r7800.md',
+    ],
+  },
+]

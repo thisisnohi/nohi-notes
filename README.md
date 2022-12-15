@@ -1,19 +1,27 @@
 # NOHI Notes
-[![aaa](https://img.shields.io/badge/thisisnohi-test__git-brightgreen.svg)](http://github.com/thisisnohi)
+[![aaa](https://img.shields.io/badge/thisisnohi-nohi--notes-brightgreen)](http://github.com/thisisnohi/nohi-notes)
+仓库地址：http://github.com/thisisnohi/nohi-notes
+主页: https://thisisnohi.github.io
+项目主页: https://thisisnohi.github.io/nohi-notes
 
-https://thisisnohi.github.io/nohi-notes
 ## 利用vuePress制作个人笔记
-> 添加导航：/docs/.vuepress/config.js
-> docs/.vuepress/nav/zh.js
-## Development
-
-> Please make sure your version of Node.js is greater than 8.
-
-``` bash
-yarn
-yarn dev  # serves VuePress' own docs with itself
-yarn test # make sure your code change pass the test
+* docs/zh/notes目录下新增xxx.md文件
+* docs/.vuepress/configs/config.ts文件 配置导航菜单
+  * docs/.vuepress/configs/items目录对应菜单下增加节点
+* 新增目录，需要在目录下增加README.MD
+```ts
+ export const dbItems = [
+  '/zh/db/database.md',
+  '/zh/db/mysql.md',
+  '/zh/db/常用脚本.md',
+]
 ```
+
+## 运行
+* 运行：yarn run docs:dev
+* 编译: yarn run docs:build
+* 发布主页：github pages: yarn deploy-github
+* 发布主页：github pages: yarn deploy-gh-pages
 
 ## Deploy
 ```
@@ -31,4 +39,5 @@ git commit -m 'deploy'
 # git push -f git@github.com:<USERNAME>/<REPO>.git master:gh-pages
 
 https://thisisnohi.github.io/nohi-notes/ 最后一定要/结尾
+https://thisisnohi.github.io 主页同样可以访问
 ```

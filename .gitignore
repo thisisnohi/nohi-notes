@@ -12,5 +12,7 @@ yarn-error.log*
 *.njsproj
 *.sln
 
+/node_modules
 .temp
-nohi-notes
+.cache
+/docs/.vuepress/dist/
