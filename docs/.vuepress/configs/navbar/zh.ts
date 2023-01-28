@@ -1,6 +1,7 @@
 // @ts-ignore
 import type { NavbarConfig } from "@vuepress/theme-default";
 import { jvmItems } from "../items/jvmItems";
+import { javaItems } from "../items/javaItems";
 import { dbItems } from "../items/dbItems";
 import { htmlItems } from "../items/htmlItems";
 import { versionItems } from "../items/versionItems";
@@ -16,6 +17,10 @@ export const navbarZh: NavbarConfig = [
     link: "/zh/notes/",
   },
   // NavbarGroup
+  {
+    text: "Java",
+    children: javaItems,
+  },
   {
     text: "JVM",
     children: jvmItems,

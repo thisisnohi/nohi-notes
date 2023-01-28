@@ -2,7 +2,7 @@
 sidebar: auto
 ---
 
-# Nginx
+# Nginx-conf
 
 ## nginx 安装windows服务
 

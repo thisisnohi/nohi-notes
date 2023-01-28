@@ -5,6 +5,36 @@ sidebar: auto
 
 ### 常用命令
 
+#### 网络
+
+* Centos8
+
+  * 重新加载网络：`nmcli c reload`
+
+    ```
+    ## 配置见：https://www.cnblogs.com/ay-a/p/11828607.html
+    TYPE=Ethernet
+    PROXY_METHOD=none
+    BROWSER_ONLY=no
+    BOOTPROTO=static
+    DEFROUTE=yes
+    IPV4_FAILURE_FATAL=no
+    IPV6INIT=yes
+    IPV6_AUTOCONF=yes
+    IPV6_DEFROUTE=yes
+    IPV6_FAILURE_FATAL=no
+    NAME=ens192
+    UUID=2497d58c-c681-40ec-a86d-72f94c01abff
+    DEVICE=ens192
+    ONBOOT=yes
+    IPADDR=10.0.0.214
+    NETMASK=255.255.255.0
+    PREFIX=24
+    GATEWAY=10.0.0.1
+    ```
+
+    
+
 #### 文件
 
 * 查看文件inode `df -ia`
@@ -146,85 +176,28 @@ find ~/file/input/BERS/ -name "*.zip" -mtime +365 -exec rm {} \;
 
 ## centos8切换yum源
 
-* 备份原源配置: mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo_bak
-
-* 下载配置(二选一)
+* [CentOS 8 EOL如何切换源？](https://help.aliyun.com/document_detail/405635.htm?spm=a2c4g.11186623.0.0.7cb420beB9u6VU)
 
   ```
-  wget -O /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
-  curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-8.repo
+  址http://mirrors.cloud.aliyuncs.com替换为http://mirrors.aliyun.com。、
+  例如，yum源替换为http://mirrors.aliyun.com/centos-vault/8.5.2111/，epel源替换为http://mirrors.aliyun.com/epel-archive/8/。
+  
+  # 运行以下命令备份之前的repo文件。
+  rename '.repo' '.repo.bak' /etc/yum.repos.d/*.repo
+  
+  # 运行以下命令下载最新的repo文件。
+  wget http://mirrors.aliyun.com/repo/Centos-vault-8.5.2111.repo -O /etc/yum.repos.d/Centos-vault-8.5.2111.repo
+  wget http://mirrors.aliyun.com/repo/epel-archive-8.repo -O /etc/yum.repos.d/epel-archive-8.repo
+  
+  # 运行以下命令替换repo文件中的链接
+  sed -i 's/http:\/\/mirrors.aliyun.com/url_tmp/g'  /etc/yum.repos.d/Centos-vault-8.5.2111.repo &&  sed -i 's/http:\/\/mirrors.aliyun.com/http:\/\/mirrors.aliyun.com/g' /etc/yum.repos.d/Centos-vault-8.5.2111.repo && sed -i 's/url_tmp/http:\/\/mirrors.aliyun.com/g' /etc/yum.repos.d/Centos-vault-8.5.2111.repo
+  sed -i 's/http:\/\/mirrors.aliyun.com/http:\/\/mirrors.aliyun.com/g' /etc/yum.repos.d/epel-archive-8.repo
+  
+  # 运行以下命令重新创建缓存
+  yum clean all && yum makecache
   ```
 
-* 编辑CentOS-AppStream.repo
-
-  ```
-  vi /etc/yum.repos.d/CentOS-AppStream.repo
-  baseurl=http://mirrors.aliyun.com/centos/$releasever/AppStream/$basearch/os/
-  ```
-
-* 保存后执行：
-
-  ```
-  yum clean all
-  yum makecache
-  ```
-
-* 异常：（ repo ‘AppStream‘ 下载元数据失败）
-
-  ```
-  https://blog.csdn.net/lisongyue123/article/details/110822915
-  ```
-
-  * CentOS-Base.repo：
-
-    ```
-    # CentOS-Base.repo
-    [BaseOS]
-    name=CentOS-$releasever - Base
-    #mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=BaseOS&infra=$infra
-    #baseurl=http://mirror.centos.org/$contentdir/$releasever/BaseOS/$basearch/os/
-    baseurl=https://mirrors.aliyun.com/centos/$releasever/BaseOS/$basearch/os/
-    gpgcheck=1
-    enabled=1
-    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
-    ```
-
-  * CentOS-AppStream.repo：
-
-    ```
-    # CentOS-AppStream.repo
-    [AppStream]
-    name=CentOS-$releasever - AppStream
-    #mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=AppStream&infra=$infra
-    #baseurl=http://mirror.centos.org/$contentdir/$releasever/AppStream/$basearch/os/
-    baseurl=https://mirrors.aliyun.com/centos/$releasever/AppStream/$basearch/os/
-    gpgcheck=1
-    enabled=1
-    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
-    ```
-
-  * CentOS-Extras.repo：
-
-    ```
-    # CentOS-Extras.repo
-    [extras]
-    name=CentOS-$releasever - Extras
-    #mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
-    #baseurl=http://mirror.centos.org/$contentdir/$releasever/extras/$basearch/os/
-    baseurl=https://mirrors.aliyun.com/centos/$releasever/extras/$basearch/os/
-    gpgcheck=1
-    enabled=1
-    gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
-    ```
-
-  * ```
-    # 清除所有缓存文件
-    yum clean all
-    # 制作元数据缓存
-    yum mackecache
-    ```
-
-    
+  
 
 ## 压缩
 
