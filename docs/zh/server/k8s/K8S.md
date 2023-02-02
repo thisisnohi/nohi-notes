@@ -6,63 +6,7 @@
 journalctl -xeu kubelet 日志目录：/run/log/journal
 ```
 
-
-
-## 教程
-
-### 1 kubeadm安装部署1.22
-
-> 见：K8S安装
->
-> https://www.bilibili.com/video/BV1cR4y1f7Ac/?spm_id_from=333.337.search-card.all.click&vd_source=9004ce053a52d5930f71e230579961e7
-
-:happy: 安装完成
-
-### 2 v1.26 安装
-
-> 安装视频参见：[kubernetes 1.26版本上线，90分钟入门精讲](https://www.bilibili.com/video/BV1Vg411b7sB/?spm_id_from=333.1007.top_right_bar_window_history.content.click&vd_source=9004ce053a52d5930f71e230579961e7)
->
-> 20220106 未安装成功，改为 v1.26+containerd方式
-
-:pensive:  安装失败
-
-### 3 v1.26+Containerd
-
-> create by nohi 20230106
->
-> 参见：[使用kubeadm部署Kubernetes 1.26](
-
-:happy: 安装完成
-
-
-
-### 4 Kubeadm安装K8s-1.26.0(docker+containerd+CRI-O)
-
-> create by nohi 20230112 
->
-> :point_right: [Kubeadm安装K8s-1.26.0（docker+containerd+CRI-O)](https://www.bilibili.com/video/BV1V8411N78a/?spm_id_from=333.788&vd_source=9004ce053a52d5930f71e230579961e7)
-
-
-
-
-
-
-
-### 【Docker+k8s教程】
-
-> create by nohi 20230112 
->
-> :link:[Docker+k8s教程](https://www.bilibili.com/video/BV1Fv4y1v7CE/?t=639.8&vd_source=9004ce053a52d5930f71e230579961e7)
->
-> :minidisc:  [课件](https://pan.baidu.com/s/1-bGAHDmt9F8gO5cngaNn7w )  提取码：9z5h 
-
-
-
-
-
-
-
-
+:spider_web:  [官网](https://kubernetes.io/zh-cn/docs/tasks/tools/install-kubectl-linux/)
 
 ## 可以做什么
 
@@ -148,25 +92,58 @@ journalctl -xeu kubelet 日志目录：/run/log/journal
 
  
 
+## 1 安装教程
+
+### 10_kubeadm安装部署k8s1.22
+
+> 见：K8S安装
+>
+> :video_camera: [视频教程](https://www.bilibili.com/video/BV1cR4y1f7Ac/?spm_id_from=333.337.search-card.all.click&vd_source=9004ce053a52d5930f71e230579961e7)
+
+* OS:  centos 8.5 
+
+* :happy: 安装完成
+
+### 11_v1.26 安装
+
+> 安装视频参见：[kubernetes 1.26版本上线，90分钟入门精讲](https://www.bilibili.com/video/BV1Vg411b7sB/?spm_id_from=333.1007.top_right_bar_window_history.content.click&vd_source=9004ce053a52d5930f71e230579961e7)
+>
+> 20220106 未安装成功，改为 v1.26+containerd方式
+
+* OS: centos 8.5 
+* :pensive:  安装失败
+
+### 12_v1.26+Containerd
+
+> create by nohi 20230106
+>
+> 参见：[使用kubeadm部署Kubernetes 1.26](https://blog.frognew.com/2023/01/kubeadm-install-kubernetes-1.26.html#22-%E4%BD%BF%E7%94%A8kubeadm-init%E5%88%9D%E5%A7%8B%E5%8C%96%E9%9B%86%E7%BE%A4)
+
+* OS: centos 8.5 
+* :happy: 安装完成
+
+### 13_v1.26(docker+containerd+CRI-O)
+
+> create by nohi 20230112 
+>
+> :point_right: [Kubeadm安装K8s-1.26.0（docker+containerd+CRI-O)](https://www.bilibili.com/video/BV1V8411N78a/?spm_id_from=333.788&vd_source=9004ce053a52d5930f71e230579961e7)
+>
+> K8s1.26 + docker + containerd + cri-o  完成
+
+* OS:  ubuntu 22.04
+
+:happy: 安装完成  👏  docker + containerd + cri-o 
 
 
-## 介绍
 
-* [官网](https://kubernetes.io/zh-cn/docs/tasks/tools/install-kubectl-linux/)
-* v1.26
+### 14_Docker+k8s教程
 
+> create by nohi 20230112 
+>
+> :link:[Docker+k8s教程](https://www.bilibili.com/video/BV1Fv4y1v7CE/?t=639.8&vd_source=9004ce053a52d5930f71e230579961e7)
+>
+> :minidisc:  [课件](9z5h )  提取码：9z5h 
+>
+> :file_folder: [备份课件](https://pan.baidu.com/s/1SCdVq9NPEZg3hzM4jIhQrw )   提取码:1111
 
-
-
-
-## 安装部署
-
-* 常见安装方式：
-  * kubeadm
-  * 二进制
-* 见:  kubeadm安装部署k8s1.22   (v1.22 + docker)
-* 见：v1.26 安装
-* k8s+containerd: https://blog.frognew.com/2023/01/kubeadm-install-kubernetes-1.26.html
-
-
-
+***未测试***

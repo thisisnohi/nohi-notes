@@ -1,4 +1,5 @@
 # 常用命令
+
 ## kubectl
 
 * kubectl get pod -A / kubectl get pods -A
@@ -38,7 +39,39 @@
   kubectl get nodes
   ```
 
-## pod
+## POD
+
+### 1 查看POD
+
+* 查看pod基本情况
+
+  ```
+  kubectl get pod
+  ```
+
+* 查看所有namespace下pod
+
+  ```
+  kubectl get pod -A
+  ```
+
+* `-owide`显示ip、node等信息
+
+### 2 查看pod详情
+
+```
+kubectl describe pod <podname>  # podname可通过kubectl get pod查看 => demo1-74564bd775-494lz
+```
+
+
+
+### 3 pod扩容
+
+```
+kubectl scale deployment demo1 --replicas 5
+```
+
+
 
 ### 删除POD
 

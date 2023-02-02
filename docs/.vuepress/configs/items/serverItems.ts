@@ -28,10 +28,10 @@ export const serverItems = [
     children: [
       "/zh/server/k8s/K8S.md",
       "/zh/server/k8s/K8S常用命令.md",
-      "/zh/server/k8s/kubeadm安装部署k8s1.22.md",
-      "/zh/server/k8s/v1.26安装.md",
-      "/zh/server/k8s/v1.26+containerd.md",
-      "/zh/server/k8s/Kubeadm安装K8s-1.26.0(docker+containerd+CRI-O).md",
+      "/zh/server/k8s/10_kubeadm安装部署k8s1.22.md",
+      "/zh/server/k8s/11_v1.26 安装.md",
+      "/zh/server/k8s/12_v1.26+Containerd.md",
+      "/zh/server/k8s/13_v1.26(docker+containerd+CRI-O).md",
     ],
   },
 ]
