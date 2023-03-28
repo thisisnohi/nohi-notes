@@ -47,6 +47,7 @@ sidebar: auto
 ## 打包
 
 ```
-GRAALVM_HOME='/Library/Java/JavaVirtualMachines/graalvm-ce-java17-22.2.0/Contents/Home' JAVA_HOME='/Library/Java/JavaVirtualMachines/jdk-17.0.2.opjdk/Contents/Home/' mvn -Pnative -DskipTests package
+GRAALVM_HOME='/Library/Java/JavaVirtualMachines/graalvm-ce-java17-22.2.0/Contents/Home' JAVA_HOME='/Library/Java/JavaVirtualMachines/jdk-17.0.2.opjdk/Contents/Home/' 
+mvn -Pnative -DskipTests package
 ```
 

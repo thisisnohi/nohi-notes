@@ -1,6 +1,79 @@
 # 常用命令
 
+## k8s自动补全
+
+```
+yum -y install bash-completion
+source /usr/share/bash-completion/bash_completion
+source <(kubectl completion bash)
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+```
+
+
+
+## 域名解析
+
+```
+route -n
+iptables-save | grep 10.105.42.173
+```
+
+
+
+## 查看日志
+
+```
+# 在pod对应机器节点查看
+# 查找对应容器id
+crictl ps
+crictl ps -a
+# 查看容器日志
+crictl logs 6e2c272bcbd41
+```
+
+
+
+## docker
+
+### 查看日志 
+
+* `docker logs --tail=1 -f 711fe733d6f4`
+* `docker logs -f 711fe733d6f4`
+
 ## kubectl
+
+* 常用
+
+  ```
+  create apply get delete logs describe
+  ```
+
+  ```
+  label
+  
+  kubectl get node --show-labels
+  ```
+
+  
+
+### 查看所有资源
+
+* `kubectl api-resources`
+
+  ```
+  [root@k8s-master ~]# kubectl api-resources
+  NAME                              SHORTNAMES   APIVERSION                             NAMESPACED   KIND
+  bindings                                       v1                                     true         Binding
+  componentstatuses                 cs           v1                                     false        ComponentStatus
+  configmaps                        cm           v1                                     true         ConfigMap
+  
+  # SHORTNAMES 为简写,如:
+  kubectl get componentstatuses == kubectl get cs
+  ```
+
+  
+
+
 
 * kubectl get pod -A / kubectl get pods -A
 * kubectl get svc -A
@@ -33,15 +106,24 @@
   kubectl get deployment -n <namespace>
   ```
 
+
+* 删除对应pod
+
+  ```
+  kubectl delete deployment <deployxxx> -n  <namespace>
+  ```
+
 * 查看节点
 
   ```
   kubectl get nodes
   ```
 
-## POD
+### POD
 
-### 1 查看POD
+#### 1 查看POD
+
+> 主要命令即是：create apply get delete logs describe
 
 * 查看pod基本情况
 
@@ -57,23 +139,28 @@
 
 * `-owide`显示ip、node等信息
 
-### 2 查看pod详情
+#### 2 查看pod详情
 
 ```
 kubectl describe pod <podname>  # podname可通过kubectl get pod查看 => demo1-74564bd775-494lz
+kubectl get pod <podname> -n <namespace> -o wide -o yaml
+kubectl get pod myblog -n nohi -o wide -o yaml
 ```
 
-
-
-### 3 pod扩容
+#### 3 pod扩容
 
 ```
 kubectl scale deployment demo1 --replicas 5
 ```
 
+#### 查看窗口情况
 
+```
+kubectl -n nohi exec -ti myblog -c mysql bash
+# 如果pod只有一个非pasuse容器，可省略-c mysql
+```
 
-### 删除POD
+#### 删除POD
 
 * 查看pod状态
 
@@ -143,6 +230,46 @@ kubectl scale deployment demo1 --replicas 5
   No resources found.
   ```
 
+#### 查看日志
+
+```
+kubectl logs -n nohi myblog -c mysql
+# 对应如下命令，711fe733d6f4是mysql id
+docker logs --tail=1 -f 711fe733d6f4  
+
+## tail
+kubectl logs -n nohi myblog -c mysql -f
+kubectl logs -n nohi myblog -c mysql -f --tail=1
+```
+
+
+
+### 标签
+
+#### 1. 查看节点标签
+
+```
+kubectl get node --show-labels
+```
+
+#### 2. 添加标签
+
+```
+kubectl label node k8s-master ingress=true
+```
+
+#### 3 删除标签
+
+```
+kubectl label node k8s-master ingress-
+```
+
+
+
+
+
+
+
 ## helm
 
 * 查询全部服务：`helm -n <namespace> ls -a `
@@ -174,4 +301,71 @@ kubectl scale deployment demo1 --replicas 5
   tigera-operator-7795f5d79b-rhht5   3m           49Mi
   ```
 
-* 
+
+
+## 路由
+
+```
+# 根据服务名称访问
+$ kubectl -n istio-demo get svc
+NAME           TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+bill-service   ClusterIP   10.107.86.195   <none>        9999/TCP   2d9h
+# pod 内访问 bill-service，实际是访问cluster-ip
+/ # nslookup bill-service
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+Name:	bill-service.istio-demo.svc.cluster.local
+Address: 10.107.86.195
+
+# 查看iptables
+$ iptables-save | grep 10.107.86.195
+-A KUBE-SERVICES -d 10.107.86.195/32 -p tcp -m comment --comment "istio-demo/bill-service:http cluster IP" -m tcp --dport 9999 -j KUBE-SVC-PK4BNTKC2JYVE7B2
+-A KUBE-SVC-PK4BNTKC2JYVE7B2 ! -s 10.224.0.0/16 -d 10.107.86.195/32 -p tcp -m comment --comment "istio-demo/bill-service:http cluster IP" -m tcp --dport 9999 -j KUBE-MARK-MASQ
+
+# 查看svc，策略为0.5
+$ iptables-save | grep KUBE-SVC-PK4BNTKC2JYVE7B2
+:KUBE-SVC-PK4BNTKC2JYVE7B2 - [0:0]
+-A KUBE-SERVICES -d 10.107.86.195/32 -p tcp -m comment --comment "istio-demo/bill-service:http cluster IP" -m tcp --dport 9999 -j KUBE-SVC-PK4BNTKC2JYVE7B2
+-A KUBE-SVC-PK4BNTKC2JYVE7B2 ! -s 10.224.0.0/16 -d 10.107.86.195/32 -p tcp -m comment --comment "istio-demo/bill-service:http cluster IP" -m tcp --dport 9999 -j KUBE-MARK-MASQ
+-A KUBE-SVC-PK4BNTKC2JYVE7B2 -m comment --comment "istio-demo/bill-service:http -> 10.224.2.176:80" -m statistic --mode random --probability 0.50000000000 -j KUBE-SEP-2N5D6YEYMYJU3FWT
+-A KUBE-SVC-PK4BNTKC2JYVE7B2 -m comment --comment "istio-demo/bill-service:http -> 10.224.2.177:80" -j KUBE-SEP-4YJXLYWAOEZ73MAQ
+
+```
+
+
+
+# Ingress
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jenkins-web
+  namespace: jenkins
+spec:
+  rules:
+  - host: jenkins.nohi.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jenkins
+            port:
+              number: 8080
+```
+
+
+
+# 常见问题
+
+##  crictl
+
+### Error while dialing dial unix /var/run/dockershim.sock: connect: no such file or directory"
+
+```
+crictl config runtime-endpoint unix:///var/run/cri-dockerd.sock
+```
+

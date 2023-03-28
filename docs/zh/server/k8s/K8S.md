@@ -1,6 +1,29 @@
 # K8S
 
 > add by nohi 20221224
+>
+> :information_desk_person:   
+>
+> 推荐教程
+>
+> * 13_v1.26(docker+containerd+CRI-O)： 跟着视频学，可以了解排错过程，尤其对小白用户，基础命令不熟悉，错误不知如何排查
+>   * 缺点：
+>     - 没有资料(资料需要购买，我对着视频以及其他教程手工输入)
+>     - 中间过程不顺畅（其实也是优点，可以了解排错过程，这里很感谢老师，至少我了解不少排错过程和思路）
+>
+> * 14_Docker+k8s教程   渐进式学习k8s教程
+>
+>   k8s版本v1.18，OS：centos7.X （本人使用centos8.5 + k8sv1.26.0， 本着折腾的原则，一步一步尝试安装）
+>
+>   * 缺点
+>
+>     * k8s版本v1.18，OS：centos7.X 非最新版本
+>
+>     * 中间有章节路过，如第三天教程 3.5后，缺少 pv pvc storageclass 和 helm、harbor安装
+>
+>       (本着折腾的原则，本资料对应章节已做修改，并且安装完成)
+
+
 
 ```
 journalctl -xeu kubelet 日志目录：/run/log/journal
@@ -109,9 +132,11 @@ journalctl -xeu kubelet 日志目录：/run/log/journal
 > 安装视频参见：[kubernetes 1.26版本上线，90分钟入门精讲](https://www.bilibili.com/video/BV1Vg411b7sB/?spm_id_from=333.1007.top_right_bar_window_history.content.click&vd_source=9004ce053a52d5930f71e230579961e7)
 >
 > 20220106 未安装成功，改为 v1.26+containerd方式
+>
+> 20220207 安装成功，具体见：14_Docker+k8s教程.md
 
 * OS: centos 8.5 
-* :pensive:  安装失败
+* :pensive:  安装失败   `->`   :laughing: 安装成功
 
 ### 12_v1.26+Containerd
 
@@ -146,4 +171,9 @@ journalctl -xeu kubelet 日志目录：/run/log/journal
 >
 > :file_folder: [备份课件](https://pan.baidu.com/s/1SCdVq9NPEZg3hzM4jIhQrw )   提取码:1111
 
-***未测试***
+start: 20230204 
+
+
+
+
+

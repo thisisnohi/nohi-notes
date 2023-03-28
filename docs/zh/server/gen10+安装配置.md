@@ -117,7 +117,8 @@ sidebar: auto
 
 * 20211114
   * 参照：https://www.opss.cn/5859.html
-  * 
+  
+    
 
 
 
@@ -137,6 +138,7 @@ sidebar: auto
 # 直通讲解
 https://www.bilibili.com/video/BV1r4411r7Fv?spm_id_from=333.999.0.0
 
+# ssh esxi服务器，直通命令
 vmkfstools -z  /vmfs/devices/disks/t10.ATA_____WDC_WD40EFAX2D68JH4N1_________________________WD2DWX42D3163V73  /vmfs/volumes/617c01e0-9a455e22-dbae-b47af1def5f0/ATA_4T.vmdk
 ```
 

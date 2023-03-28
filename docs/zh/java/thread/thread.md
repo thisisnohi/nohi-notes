@@ -123,9 +123,9 @@ public ThreadPoolExecutor(int corePoolSize,int maximumPoolSize,long keepAliveTim
 ```
 
 * corePoolSize 表示 核心线程数
-        1. 创建线程池时, 在线程池中常驻的线程, 当corePoolSize <= 0 销毁线程池
-        2. 当corePoolSize > 0 线程池中常驻的线程数 = corePoolSize.
-        3. corePoolSize选择: 应该根据实际情况选择 , 如果corePoolSize 太小会存在频繁创建线程和销毁线程的行为
+      1. 创建线程池时, 在线程池中常驻的线程, 当corePoolSize <= 0 销毁线程池
+      2. 当corePoolSize > 0 线程池中常驻的线程数 = corePoolSize.
+      3. corePoolSize选择: 应该根据实际情况选择 , 如果corePoolSize 太小会存在频繁创建线程和销毁线程的行为
 
 * maximumPoolSize表示 线程池最大线程数    
 
@@ -134,11 +134,11 @@ public ThreadPoolExecutor(int corePoolSize,int maximumPoolSize,long keepAliveTim
   2. 当提交的线程数大于corePoolSize时 , 那么线程池就会创建新的线程 
   3. 这个线程的数量一定是在 corePoolSize <=线程数<= maximumPoolSize
 
-*  keepAliveTime 表示空闲的线程存活时间      
+* keepAliveTime 表示空闲的线程存活时间      
 
-    当线程池中的线程空闲时间大于 keepAliveTime时,    那么就会销毁多余的线程 , 到等于corePoolSize的 数值
+  当线程池中的线程空闲时间大于 keepAliveTime时,    那么就会销毁多余的线程 , 到等于corePoolSize的 数值
 
-    TimeUnit 表示线程存活的时间单位
+  TimeUnit 表示线程存活的时间单位
 
 * workQueue 线程任务队列 
       1. 当线程池中的所有任务队列都在执行任务时,那么新的线程任务就会存入到队列中 ,  等待被消费
@@ -169,5 +169,258 @@ public ThreadPoolExecutor(int corePoolSize,int maximumPoolSize,long keepAliveTim
   );
   ```
 
-  
+## CompletableFuture
 
+>   :point_right: [参考](https://juejin.cn/post/6970558076642394142)
+
+### Future
+
+- Future.get() 就是阻塞调用，在线程获取结果之前**get方法会一直阻塞**。
+- Future提供了一个isDone方法，可以在程序中**轮询这个方法查询**执行结果。
+
+```
+@Test
+public void testFutureCallable() throws InterruptedException {
+    FutureTask<FutureVO> ft = new FutureTask(new Callable<FutureVO>() {
+        long sleep = 10l;
+        @Override
+        public FutureVO call() throws Exception {
+            System.out.println("callable do something then return...");
+            FutureVO vo = new FutureVO();
+            vo.setMsgId(new SecureRandom().nextLong());
+            vo.setTitle("FUTURE");
+            vo.setMsg("TEST future");
+            if (sleep > 0) {
+                TimeUnit.SECONDS.sleep(sleep);
+            }
+            return vo;
+        }
+    });
+    executor.submit(ft);
+
+    try {
+        System.out.println("isDone:" + ft.isDone());
+        System.out.println("isDone:" + ft.isDone());
+        System.out.println("isDone:" + ft.isDone());
+
+        FutureVO futureVO = ft.get();
+        System.out.println(JSON.toJSONString(futureVO));
+    } catch (ExecutionException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+### 创建异步任务
+
+- supplyAsync执行CompletableFuture任务，支持返回值
+
+- runAsync执行CompletableFuture任务，没有返回值。
+
+  #### supplyAsync方法
+
+  ```swift
+  //使用默认内置线程池ForkJoinPool.commonPool()，根据supplier构建执行任务
+  public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier)
+  //自定义线程，根据supplier构建执行任务
+  public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executor executor)
+  复制代码
+  ```
+
+  #### runAsync方法
+
+  ```java
+  //使用默认内置线程池ForkJoinPool.commonPool()，根据runnable构建执行任务
+  public static CompletableFuture<Void> runAsync(Runnable runnable) 
+  //自定义线程，根据runnable构建执行任务
+  public static CompletableFuture<Void> runAsync(Runnable runnable,  Executor executor)
+  ```
+
+* DEMO
+
+```
+ExecutorService executor = Executors.newFixedThreadPool(2);
+@Test
+public void testCompletableFuture() {
+    long sleep = 10l;
+
+    CompletableFuture<FutureVO> cf = CompletableFuture.supplyAsync(() -> {
+        System.out.println("CompletableFuture.supplyAsync do something then return...");
+        FutureVO vo = new FutureVO();
+        vo.setMsgId(new SecureRandom().nextLong());
+        vo.setTitle("FUTURE");
+        vo.setMsg("TEST future");
+        if (sleep > 0) {
+            try {
+                TimeUnit.SECONDS.sleep(sleep);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return vo;
+    }, executor);
+
+    try {
+        FutureVO vo = cf.get(1, TimeUnit.SECONDS);
+        System.out.println("1:" + JSONObject.toJSONString(vo));
+        return;
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("get with 1s error " + e.getMessage());
+    }
+
+    try {
+        FutureVO vo = cf.get(2, TimeUnit.SECONDS);
+        System.out.println("2:" + JSONObject.toJSONString(vo));
+        return;
+    } catch (Exception e) {
+        System.out.println("get with 2s error " + e.getMessage());
+    }
+
+    try {
+        FutureVO vo = cf.get();
+        System.out.println("3:" + JSONObject.toJSONString(vo));
+    } catch (Exception e) {
+        System.out.println("get error " + e.getMessage());
+    }
+}
+```
+
+### 任务异步回调
+
+#### 1. thenRun/thenRunAsync
+
+CompletableFuture的thenRun方法，通俗点讲就是，**做完第一个任务后，再做第二个任务**。某个任务执行完成后，执行回调方法；但是前后两个任务**没有参数传递，第二个任务也没有返回值**
+
+- 调用thenRun方法执行第二个任务时，则第二个任务和第一个任务是**共用同一个线程池**。
+
+- 调用thenRunAsync执行第二个任务时，则第一个任务使用的是你自己传入的线程池，**第二个任务使用的是ForkJoin线程池**
+
+- DEMO
+
+  ```
+  @Test
+  public void testThenRun() throws ExecutionException, InterruptedException {
+      CompletableFuture<String> orgFuture = CompletableFuture.supplyAsync(() -> {
+          System.out.println("先执行第一个CompletableFuture方法任务");
+          return "捡田螺的小男孩";
+      });
+  
+      CompletableFuture thenRunFuture = orgFuture.thenRun(() -> {
+          System.out.println("接着执行第二个任务");
+      });
+  
+      System.out.println(thenRunFuture.get());
+  }
+  
+  # 执行结果
+  先执行第一个CompletableFuture方法任务
+  接着执行第二个任务
+  null
+  ```
+
+#### 2.thenAccept/thenAcceptAsync
+
+CompletableFuture的thenAccept方法表示，第一个任务执行完成后，执行第二个回调方法任务，会将该任务的执行结果，作为入参，传递到回调方法中，但是回调方法是**没有返回值**的。
+
+```
+@Test
+public void testThenAccept() throws ExecutionException, InterruptedException {
+    CompletableFuture<String> orgFuture = CompletableFuture.supplyAsync(() -> {
+        System.out.println("原始CompletableFuture方法任务");
+        return "捡田螺的小男孩";
+    });
+    System.out.println("orgFuture:" + orgFuture.get());
+    CompletableFuture thenAcceptFuture = orgFuture.thenAccept((a) -> {
+        if ("捡田螺的小男孩".equals(a)) {
+            System.out.println("关注了");
+        }
+        System.out.println("先考虑考虑");
+    });
+    System.out.println("thenAcceptFuture:" + thenAcceptFuture.get());
+}
+
+# 执行结果
+原始CompletableFuture方法任务
+orgFuture:捡田螺的小男孩
+关注了
+先考虑考虑
+thenAcceptFuture:null
+```
+
+#### 3. thenApply/thenApplyAsync
+
+CompletableFuture的thenApply方法表示，第一个任务执行完成后，执行第二个回调方法任务，会将该任务的执行结果，作为入参，传递到回调方法中，并且回调方法是有返回值的。
+
+#### 4. exceptionally
+
+CompletableFuture的exceptionally方法表示，某个任务执行异常时，执行的回调方法;并且有**抛出异常作为参数**，传递到回调方法。
+
+#### 5. whenComplete方法
+
+CompletableFuture的whenComplete方法表示，某个任务执行完成后，执行的回调方法，**无返回值**；并且whenComplete方法返回的CompletableFuture的**result是上个任务的结果**。
+
+#### 6. handle方法
+
+CompletableFuture的handle方法表示，**某个任务执行完成后，执行回调方法，并且是有返回值的**;并且handle方法返回的CompletableFuture的result是**回调方法**执行的结果。
+
+### 多个任务组合处理
+
+#### AND组合关系
+
+thenCombine / thenAcceptBoth / runAfterBoth都表示：**将两个CompletableFuture组合起来，只有这两个都正常执行完了，才会执行某个任务**。
+
+区别在于：
+
+- thenCombine：会将两个任务的执行结果作为方法入参，传递到指定方法中，且**有返回值**
+- thenAcceptBoth: 会将两个任务的执行结果作为方法入参，传递到指定方法中，且**无返回值**
+- runAfterBoth 不会把执行结果当做方法入参，且没有返回值。
+
+#### OR 组合的关系
+
+applyToEither / acceptEither / runAfterEither 都表示：将两个CompletableFuture组合起来，只要其中一个执行完了,就会执行某个任务。
+
+区别在于：
+
+- applyToEither：会将已经执行完成的任务，作为方法入参，传递到指定方法中，且有返回值
+- acceptEither: 会将已经执行完成的任务，作为方法入参，传递到指定方法中，且无返回值
+- runAfterEither： 不会把执行结果当做方法入参，且没有返回值。
+
+#### AllOf
+
+所有任务都执行完成后，才执行 allOf返回的CompletableFuture。如果任意一个任务异常，allOf的CompletableFuture，执行get方法，会抛出异常
+
+### AnyOf
+
+任意一个任务执行完，就执行anyOf返回的CompletableFuture。如果执行的任务异常，anyOf的CompletableFuture，执行get方法，会抛出异常
+
+### thenCompose
+
+thenCompose方法会在某个任务执行完成后，将该任务的执行结果,作为方法入参,去执行指定的方法。该方法会返回一个新的CompletableFuture实例
+
+- 如果该CompletableFuture实例的result不为null，则返回一个基于该result新的CompletableFuture实例；
+- 如果该CompletableFuture实例为null，然后就执行这个新任务
+
+### CompletableFuture使用有哪些注意点
+
+CompletableFuture 使我们的异步编程更加便利的、代码更加优雅的同时，我们也要关注下它，使用的一些注意点。
+
+#### 1. Future需要获取返回值，才能获取异常信息
+
+Future需要获取返回值，才能获取到异常信息。如果不加 get()/join()方法，看不到异常信息。小伙伴们使用的时候，注意一下哈,考虑是否加try...catch...或者使用exceptionally方法。
+
+#### 2. CompletableFuture的get()方法是阻塞的。
+
+CompletableFuture的get()方法是阻塞的，如果使用它来获取异步调用的返回值，需要添加超时时间~
+
+#### 3. 默认线程池的注意点
+
+CompletableFuture代码中又使用了默认的线程池，处理的线程个数是电脑CPU核数-1。在**大量请求过来的时候，处理逻辑复杂的话，响应会很慢**。一般建议使用自定义线程池，优化线程池配置参数。
+
+#### 4. 自定义线程池时，注意饱和策略
+
+CompletableFuture的get()方法是阻塞的，我们一般建议使用`future.get(3, TimeUnit.SECONDS)`。并且一般建议使用自定义线程池。
+
+但是如果线程池拒绝策略是`DiscardPolicy`或者`DiscardOldestPolicy`，当线程池饱和时，会直接丢弃任务，不会抛弃异常。因此建议，CompletableFuture线程池策略**最好使用AbortPolicy**，然后耗时的异步线程，做好**线程池隔离**哈。
+
+ 
