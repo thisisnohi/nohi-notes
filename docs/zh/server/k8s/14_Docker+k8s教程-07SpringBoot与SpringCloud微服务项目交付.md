@@ -1232,7 +1232,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 再次启动发现可以注册，但是地址是
 
-![image-20200915211607173](./attach/day7/image-20200915211607173.png)
+
 
 
 
