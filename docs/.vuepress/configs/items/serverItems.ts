@@ -32,6 +32,13 @@ export const serverItems = [
       "/zh/server/k8s/11_v1.26 安装.md",
       "/zh/server/k8s/12_v1.26+Containerd.md",
       "/zh/server/k8s/13_v1.26(docker+containerd+CRI-O).md",
+      "/zh/server/k8s/14_Docker+k8s教程-01基础.md",
+      "/zh/server/k8s/14_Docker+k8s教程-03进阶.md",
+      "/zh/server/k8s/14_Docker+k8s教程-04日志监控.md",
+      "/zh/server/k8s/14_Docker+k8s教程-05从零开始构建基于Kubernetes的DevOps平台.md",
+      "/zh/server/k8s/14_Docker+k8s教程-06sharedLibrary进行CICD流程的优化.md",
+      "/zh/server/k8s/14_Docker+k8s教程-07SpringBoot与SpringCloud微服务项目交付.md",
+      "/zh/server/k8s/14_Docker+k8s教程-08基于Istion实现微服务治理.md"
     ],
   },
 ]

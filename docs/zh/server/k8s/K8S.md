@@ -175,5 +175,9 @@ start: 20230204
 
 
 
+## 关键知识
 
+### SatefulSet、Deployment
+
+> **StatefulSet** 和 **Deployment** 作为我们在 k8s 中常用的控制器（工作负载），以不同方式管理着 Pod。通常情况下，StatefulSet 用于部署有状态应用，Deployment 则用于部署无状态应用。
 

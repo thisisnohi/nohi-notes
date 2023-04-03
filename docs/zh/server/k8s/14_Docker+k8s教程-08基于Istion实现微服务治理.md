@@ -363,3 +363,59 @@ spec:
       weight: 10
 ```
 
+### 服务网格细节剖析
+
+执行的操作
+
+* 使用istioctl为pod注入了sidecar
+* 创建了virtualservice和destinationrule
+
+
+
+![image-20230328210120620](./attach/day8/image-20230328210120620.png)
+
+
+
+![image-20230328211410739](./attach/day8/image-20230328211410739.png)
+
+#### 工作原理
+
+* 用户端，通过创建服务治理的规则(VirtualService、DestinationRule等资源类型)，存储到ETCD中
+* istio控制平面中的Pilot服务监听上述规则，转换成envoy可读的规则配置，通过xDS接口同步给各envoy
+* envoy通过xDS获取最新的配置后，动态reload，进而改变流量转发的策略
+
+问题
+
+	* istio中envoy的动态配置是什么格式
+	* 在istio的网络内，font-tomcat访问到bill-service，流量的流向是怎么样的？
+
+问题1
+
+每个envoy进程启动时，会在127.0.0.1启动监听商品15000端口
+
+```
+$ kubectl -n istio-demo exec  -it front-tomcat-v1-8fb6f7db8-tpx4p -c istio-proxy -- 
+bash
+# curl localhost:15000/help
+# curl localhost:15000/config_dump
+```
+
+问题2
+
+```
+$ kubectl -n istio-demo exec  -it front-tomcat-v1-8fb6f7db8-tpx4p -c front-tomcat -- 
+bash
+# curl bill-service:9999
+```
+
+
+
+![image-20230328213315703](./attach/day8/image-20230328213315703.png)
+
+
+
+```
+20230328 istio后续视频暂停
+继续SpringCloud服务部署K8S内容
+```
+

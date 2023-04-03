@@ -554,7 +554,7 @@ $ java -jar demo-0.0.1-SNAPSHOT.jar
 因此，需要准备Dockerfile来构建镜像：
 
 ```dockerfile
-FROM openjdk:8-jdk-alpine
+FROM openjdk:17-jdk-alpine
 COPY target/springboot-demo-0.0.1-SNAPSHOT.jar app.jar
 CMD [ "sh", "-c", "java -jar /app.jar" ]
 ```
@@ -570,7 +570,9 @@ CMD [ "sh", "-c", "java -jar /app.jar" ]
 `Dockerfile`对应修改：
 
 ```dockerfile
- 
+FROM openjdk:17-jdk-alpine
+COPY target/springboot-demo.jar app.jar
+CMD [ "sh", "-c", "java -jar /app.jar" ]
 ```
 
 
@@ -579,9 +581,7 @@ CMD [ "sh", "-c", "java -jar /app.jar" ]
 
 ```powershell
 $ docker build . -t springboot-demo:v1 -f Dockerfile
-
 $ docker run -d --name springboot-demo -p 8080:8080 springboot-demo:v1
-
 $ curl localhost:8080
 ```
 
@@ -991,6 +991,14 @@ https://spring.io/projects/spring-cloud#overview
 
 > 本课程基于SpringBoot 2.3.6.RELEASE 和Spring Cloud Hoxton.SR9版本
 
+> 20230328 edit by nohi
+>
+> SpringBoot框架采用 3.0.1
+>
+> SpringCloud 2022.0.1
+>
+> 源码：git@github.com:thisisnohi/SpringCloud2022.git   分支：feature-springcloud2022boot3
+
 #### 微服务场景
 
 开发APP，提供个人的花呗账单管理。
@@ -1096,8 +1104,6 @@ public class EurekaServerApplication {
 
 
 
-
-
 ##### eureka认证
 
 没有认证，不安全，添加认证：
@@ -1115,7 +1121,7 @@ application.yml
 
 ```yaml
 server:
-  port: 8761
+  port: 7001
 eureka:
   client:
     service-url:
@@ -1137,7 +1143,7 @@ spring:
 
 ##### 注册服务到eureka
 
-新建项目，user-service（选择Spring Cloud依赖和SpringBoot Web依赖），用来提供用户查询功能。
+新建项目，sys-user（选择Spring Cloud依赖和SpringBoot Web依赖），用来提供用户查询功能。
 
 
 
@@ -1166,7 +1172,7 @@ spring:
 
 ```yaml
 server:
-  port: 7000
+  port: 8080
 eureka:
   client:
     serviceUrl:
@@ -1197,6 +1203,8 @@ public class UserServiceApplication {
     }
 }
 ```
+
+>20230329 最新版本，已不需要@EnableDiscoveryClient
 
 
 
@@ -1240,7 +1248,7 @@ application.yaml
 
 ```yaml
 server:
-  port: 7000
+  port: 8080
 eureka:
   client:
     serviceUrl:
@@ -1248,10 +1256,10 @@ eureka:
   instance:
     instance-id: ${eureka.instance.hostname}:${server.port}
     prefer-ip-address: true
-    hostname: user-service
+    hostname: sys-user
 spring:
   application:
-    name: user-service
+    name: sys-user
 ```
 
 
@@ -1323,8 +1331,6 @@ spring:
 ```powershell
 127.0.0.1 peer1 peer2
 ```
-
-
 
 
 
@@ -1429,7 +1435,7 @@ spec:
     app: eureka-cluster
 ```
 
-
+> 使用ingress访问eureka,删除上面无头服务
 
 想通过ingress访问eureka，需要使用有头服务
 
@@ -1448,7 +1454,7 @@ spec:
   selector:
     app: eureka-cluster
 ---
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: eureka-cluster
@@ -1458,10 +1464,13 @@ spec:
     - host: eureka-cluster.nohi.com
       http:
         paths:
-          - backend:
-              serviceName: eureka-ingress
-              servicePort: 8761
-            path: /
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: eureka-ingress
+              port:
+                number: 8761
 status:
   loadBalancer: {}
 ```
@@ -1525,7 +1534,7 @@ $ kubectl -n spring exec  -ti nginx-statefulset-0 sh
 
 所需的文件:
 
-- 
+
 
 在pom.xml中重写jar包名称：
 
@@ -1537,7 +1546,7 @@ $ kubectl -n spring exec  -ti nginx-statefulset-0 sh
 
 ```dockerfile
 FROM openjdk:8-jdk-alpine
-ADD target/eureka.jar app.jar
+ADD target/ms-eureka.jar app.jar
 ENV JAVA_OPTS=""
 CMD [ "sh", "-c", "java $JAVA_OPTS -jar /app.jar" ]
 ```
@@ -1748,7 +1757,7 @@ public class UserController {
 
     @GetMapping("/user")
     public String getUserService(){
-        return "this is user-service";
+        return "this is sys-user";
     }
 
     @GetMapping("/user-nums")
@@ -1759,11 +1768,11 @@ public class UserController {
     //{"id": 123, "name": "张三", "age": 20, "sex": "male"}
     @GetMapping("/user/{id}")
     public User getUserInfo(@PathVariable("id") int id){
-        User user = new User();
-        user.setId(id);
+        UserDTO user = new UserDTO();
+        user.setUserId("id_" + id);
         user.setAge(20);
-        user.setName("zhangsan");
-        user.setSex("male");
+        user.setUserName("zhangsan");
+        user.setAddress("male");
         return user;
     }
 }
@@ -1774,43 +1783,13 @@ public class UserController {
 ```java
 package com.nohi.userservice.entity;
 
-public class User {
-    private int id;
-    private String name;
-    private int age;
-    private String sex;
-
-    public int getAge() {
-        return age;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getSex() {
-        return sex;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setSex(String sex) {
-        this.sex = sex;
-    }
+public class UserDTO {
+    private String userId;
+    private String userNo;
+    private String userName;
+    private Integer age;
+    private String address;
+    ...省略
 }
 ```
 
@@ -1820,7 +1799,7 @@ public class User {
 
 ```yaml
 server:
-  port: 7000
+  port: 8080
 eureka:
   client:
     serviceUrl:
@@ -1828,10 +1807,11 @@ eureka:
   instance:
     instance-id: ${eureka.instance.hostname}:${server.port}
     prefer-ip-address: true
-    hostname: ${INSTANCE_HOSTNAME:user-service}
+    hostname: ${INSTANCE_HOSTNAME:sys-user}
 spring:
   application:
-    name: user-service
+    name: sys-user
+# 其他省略，见代码工程
 ```
 
 
@@ -1844,24 +1824,24 @@ spring:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: user-service
+  name: sys-user
   namespace: {{NAMESPACE}}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user-service
+      app: sys-user
   template:
     metadata:
       labels:
-        app: user-service
+        app: sys-user
     spec:
       containers:
-        - name: user-service
+        - name: sys-user
           image: {{IMAGE_URL}}
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 7000
+            - containerPort: 8080
           resources:
             requests:
               memory: 400Mi
@@ -1872,18 +1852,15 @@ spec:
           env:
             - name: JAVA_OPTS
               value: -XX:+UnlockExperimentalVMOptions
-                -XX:+UseCGroupMemoryLimitForHeap
                 -XX:MaxRAMFraction=2
                 -XX:CICompilerCount=8
                 -XX:ActiveProcessorCount=8
                 -XX:+UseG1GC
-                -XX:+AggressiveOpts
-                -XX:+UseFastAccessorMethods
                 -XX:+UseStringDeduplication
                 -XX:+UseCompressedOops
                 -XX:+OptimizeStringConcat
             - name: EUREKA_SERVER
-              value: "http://admin:admin@eureka-cluster-0.eureka:8761/eureka/,http://admin:admin@eureka-cluster-1.eureka:8761/eureka/,http://admin:admin@eureka-cluster-2.eureka:8761/eureka/"
+              value: "http://eureka-cluster-0.eureka:8761/eureka/,http://eureka-cluster-1.eureka:8761/eureka/,http://eureka-cluster-2.eureka:8761/eureka/"
             - name: INSTANCE_HOSTNAME
               valueFrom:
                 fieldRef:
@@ -1896,7 +1873,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user-service
+  name: sys-user
   namespace: {{NAMESPACE}}
 spec:
   ports:
@@ -1904,7 +1881,7 @@ spec:
       protocol: TCP
       targetPort: 7000
   selector:
-    app: user-service
+    app: sys-user
   sessionAffinity: None
   type: ClusterIP
 status:
@@ -1914,22 +1891,25 @@ status:
 `ingress.yaml`
 
 ```yaml
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: user-service
+  name: sys-user
   namespace: {{NAMESPACE}}
 spec:
   rules:
     - host: {{INGRESS_USER_SERVICE}}
       http:
         paths:
-          - backend:
-              serviceName: user-service
-              servicePort: 7000
-            path: /
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sys-user
+                port:
+                  number: 8080
 status:
-  loadBalancer: {}
+  loadBalancer: { }
 ```
 
 ingress配置：
@@ -1940,7 +1920,7 @@ $ kubectl -n dev edit configmap devops-config
 data:
   INGRESS_MYBLOG: blog-dev.nohi.com
   INGRESS_SPRINGBOOTDEMO: springboot-dev.nohi.com
-  INGRESS_USER_SERVICE: user-service-dev.nohi.com
+  INGRESS_USER_SERVICE: sys-user-dev.nohi.com
   NAMESPACE: dev
 ...
 ```
@@ -1959,10 +1939,10 @@ pipeline {
 		gitLabConnection('gitlab')
 	}
     environment {
-        IMAGE_REPO = "10.0.0.181:5000/spring-cloud/user-service"
+        IMAGE_REPO = "10.0.0.181:5000/spring-cloud/sys-user"
         IMAGE_CREDENTIAL = "credential-registry"
         DINGTALK_CREDS = credentials('dingTalk')
-        PROJECT = "user-service"
+        PROJECT = "sys-user"
     }
     stages {
         stage('checkout') {
@@ -2048,8 +2028,8 @@ pipeline {
 `Dockerfile`
 
 ```dockerfile
-FROM openjdk:8-jdk-alpine
-COPY target/user-service.jar app.jar
+FROM openjdk:17-jdk-alpine
+COPY target/sys-user.jar app.jar
 ENV JAVA_OPTS=""
 CMD [ "sh", "-c", "java $JAVA_OPTS -jar /app.jar" ]
 ```
@@ -2057,8 +2037,8 @@ CMD [ "sh", "-c", "java $JAVA_OPTS -jar /app.jar" ]
 `sonar-project.properties`
 
 ```properties
-sonar.projectKey=user-service
-sonar.projectName=user-service
+sonar.projectKey=sys-user
+sonar.projectName=sys-user
 # if you want disabled the DTD verification for a proxy problem for example, true by default
 # JUnit like test report, default value is test.xml
 sonar.sources=src/main/java
@@ -2069,11 +2049,11 @@ sonar.java.binaries=target/classes
 
 
 
-创建user-service项目，提交代码：
+创建sys-user项目，提交代码：
 
 ```powershell
 git init
-git remote add origin http://gitlab.nohi.com/nohi-spring-cloud/user-service.git
+git remote add origin http://gitlab.nohi.com/nohi-spring-cloud/sys-user.git
 git add .
 git commit -m "Initial commit"
 git push -u origin master
@@ -2085,7 +2065,7 @@ git push -u origin develop
 
 创建Jenkins任务，测试自动部署
 
-访问`http://user-service-dev.nohi.com/` 验证
+访问`http://sys-user-dev.nohi.com/` 验证
 
 ##### 服务消费者
 
@@ -2297,7 +2277,7 @@ public class BillController {
 
     @GetMapping("/bill/user")
     public String getUserInfo(){
-        return restTemplate.getForObject("http://user-service/user", String.class);
+        return restTemplate.getForObject("http://sys-user/user", String.class);
     }
 }
 ```
@@ -2351,7 +2331,7 @@ public class BillController {
 
     @GetMapping("/service/user")
     public String getUserInfo(){
-        return restTemplate.getForObject("http://user-service/user", String.class);
+        return restTemplate.getForObject("http://sys-user/user", String.class);
     }
 
     @GetMapping("/normal")
@@ -2365,11 +2345,11 @@ public class BillController {
 
 ######  Ribbon 负载均衡
 
-再启动一个user-service-instance2，复制user-service项目
+再启动一个sys-user-instance2，复制sys-user项目
 
 
 
-修改user-service-instance2的application.yml的server.port
+修改sys-user-instance2的application.yml的server.port
 
 ```yaml
 server:
@@ -2381,13 +2361,13 @@ eureka:
   instance:
     instance-id: ${eureka.instance.hostname}:${server.port}
     prefer-ip-address: true
-    hostname: ${INSTANCE_HOSTNAME:user-service}
+    hostname: ${INSTANCE_HOSTNAME:sys-user}
 spring:
   application:
-    name: user-service
+    name: sys-user
 ```
 
-修改user-service-instance2的UserController.java，为了可以区分是哪个服务提供者的实例提供的服务
+修改sys-user-instance2的UserController.java，为了可以区分是哪个服务提供者的实例提供的服务
 
 ```java
 package com.nohi.userservice.controller;
@@ -2405,7 +2385,7 @@ public class UserController {
 
     @GetMapping("/user")
     public String getUserService(){
-        return "this is user-service-instance2";
+        return "this is sys-user-instance2";
     }
 
     @GetMapping("/user-nums")
@@ -2483,7 +2463,7 @@ import org.springframework.cloud.netflix.ribbon.RibbonClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-@RibbonClient(name = "user-service", configuration = RandomConfiguration.class)
+@RibbonClient(name = "sys-user", configuration = RandomConfiguration.class)
 public class BillServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(BillServiceApplication.class, args);
@@ -2512,7 +2492,7 @@ import org.springframework.cloud.netflix.ribbon.RibbonClient;
 
 @SpringBootApplication
 @EnableDiscoveryClient
-//@RibbonClient(name = "USER-SERVICE", configuration = RandomConfiguration.class)
+//@RibbonClient(name = "sys-user", configuration = RandomConfiguration.class)
 public class TicketApplication {
     public static void main(String[] args) {
         SpringApplication.run(TicketApplication.class, args);
@@ -2539,7 +2519,7 @@ eureka:
   instance:
     prefer-ip-address: true
     instance-id: ${spring.cloud.client.ip-address}:${server.port}
-user-service:
+sys-user:
   ribbon:
     NFLoadBalancerRuleClassName: com.netflix.loadbalancer.RandomRule
 ```
@@ -2607,7 +2587,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name="user-service")
+@FeignClient(name="sys-user")
 public interface UserServiceCli {
 
     @GetMapping("/user")
@@ -2692,7 +2672,7 @@ public class BillController {
     @GetMapping("/bill/user/{id}")
     public User getUserInfo(@PathVariable("id") int id){
         return userServiceCli.getUserInfo(id);
-        //return restTemplate.getForObject("http://USER-SERVICE/user/" + id, String.class);
+        //return restTemplate.getForObject("http://sys-user/user/" + id, String.class);
     }
 }
 ```
@@ -2701,9 +2681,9 @@ public class BillController {
 
 ###### CICD持续交付服务消费者
 
-拷贝user-service的交付文件，替换如下：
+拷贝sys-user的交付文件，替换如下：
 
-- user-service  -> bill-service
+- sys-user  -> bill-service
 - 7000 -> 7001
 - INGRESS_USER_SERVICE -> INGRESS_BILL_SERVICE
 
@@ -2715,8 +2695,8 @@ $ kubectl -n dev edit configmap devops-config
 data:
   INGRESS_MYBLOG: blog-dev.nohi.com
   INGRESS_SPRINGBOOTDEMO: springboot-dev.nohi.com
-  INGRESS_USER_SERVICE: user-service-dev.nohi.com
-  INGRESS_BILL_SERVICE: user-service-dev.nohi.com
+  INGRESS_USER_SERVICE: sys-user-dev.nohi.com
+  INGRESS_BILL_SERVICE: sys-user-dev.nohi.com
   NAMESPACE: dev
 ...
 ```
@@ -2804,7 +2784,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-@FeignClient(name="user-service", fallback = UserServiceFallbackImpl.class)
+@FeignClient(name="sys-user", fallback = UserServiceFallbackImpl.class)
 public interface UserServiceCli {
 
     @GetMapping("/user")
@@ -2843,7 +2823,7 @@ public class UserServiceFallbackImpl implements UserServiceCli{
 }
 ```
 
-停止user-service测试熔断及fallback。
+停止sys-user测试熔断及fallback。
 
 
 
@@ -3105,7 +3085,7 @@ eureka:
 
  http://localhost:10000/bill-service/bill/user/1 
 
- http://localhost:10000/user-service/user
+ http://localhost:10000/sys-user/user
 
 
 
@@ -3114,7 +3094,7 @@ eureka:
 ```yaml
 zuul:
   routes:
-    user-service: /users/**
+    sys-user: /users/**
     bill-service:
       path: /bill/**
       service-id: bill-service
@@ -3123,7 +3103,7 @@ zuul:
 ```powershell
 http://localhost:10000/users/user/1
                                                  --->  http://localhost:7000/user/2
-http://localhost:10000/user-service/user/1
+http://localhost:10000/sys-user/user/1
 
 
 
@@ -3156,10 +3136,10 @@ management:
 
 ```json
 {
-"/apis/users/**": "user-service",
+"/apis/users/**": "sys-user",
 "/apis/bill/**": "bill-service",
 "/apis/bill-service/**": "bill-service",
-"/apis/user-service/**": "user-service"
+"/apis/sys-user/**": "sys-user"
 }
 ```
 
@@ -3177,7 +3157,7 @@ Spring Cloud Config 配置中心提供了一个中心化的外部配置，默认
 
 - 创建代码仓库`configure-repo`，用于集中存储配置文件
 - 创建项目`config-server`，用于接受各项目的连接，提供配置文件读取服务
-- 修改`user-service`服务，验证通过`config-server`读取集中配置库中的配置文件
+- 修改`sys-user`服务，验证通过`config-server`读取集中配置库中的配置文件
 
 代码仓库：
 
@@ -3196,7 +3176,7 @@ Spring Cloud Config 配置中心提供了一个中心化的外部配置，默认
   nohi: city
   ```
 
-  `configs/user-service-dev.yml` 
+  `configs/sys-user-dev.yml` 
 
   ```yaml
   logging:
@@ -3291,7 +3271,7 @@ public class ConfigServerApplication {
 
 ```powershell
 http://localhost:8088/common/dev
-http://localhost:8088/user-service/dev
+http://localhost:8088/sys-user/dev
 ```
 
 
@@ -3300,7 +3280,7 @@ http://localhost:8088/user-service/dev
 
 
 
-修改`user-service`服务，从`config-server`读取配置
+修改`sys-user`服务，从`config-server`读取配置
 
 - 添加使用统一配置中心的依赖：
 
@@ -3325,15 +3305,15 @@ http://localhost:8088/user-service/dev
     instance:
       instance-id: ${eureka.instance.hostname}:${server.port}
       prefer-ip-address: true
-      hostname: ${INSTANCE_HOSTNAME:user-service}
+      hostname: ${INSTANCE_HOSTNAME:sys-user}
   spring:
     application:
-      name: user-service
+      name: sys-user
     cloud:
       config:
         uri: http://localhost:8088
         profile: dev  #当前读取dev环境的配置
-        name: user-service, common  # 从user-service-dev.yml,common-dev.yml中读取
+        name: sys-user, common  # 从sys-user-dev.yml,common-dev.yml中读取
   
   ```
 
@@ -3392,7 +3372,7 @@ http://localhost:8088/user-service/dev
 `config-server`多个实例，如何配置客户端？
 
 - `config-server` 作为服务提供者，注册到eureka服务注册中心
-- `user-service`配置从注册中心获取config-server的服务
+- `sys-user`配置从注册中心获取config-server的服务
 
 
 
@@ -3428,7 +3408,7 @@ http://localhost:8088/user-service/dev
 
   
 
-修改`user-service`，从注册中心发现服务
+修改`sys-user`，从注册中心发现服务
 
 - 修改bootstrap.yml
 
@@ -3443,7 +3423,7 @@ http://localhost:8088/user-service/dev
         discovery:
           enabled: true
           service-id: config-server
-        name: user-service, common
+        name: sys-user, common
   
   eureka:
     client:
@@ -3452,7 +3432,7 @@ http://localhost:8088/user-service/dev
     instance:
       instance-id: ${eureka.instance.hostname}:${server.port}
       prefer-ip-address: true
-      hostname: ${INSTANCE_HOSTNAME:user-service}
+      hostname: ${INSTANCE_HOSTNAME:sys-user}
   ```
 
   
@@ -3488,7 +3468,7 @@ http://localhost:8088/user-service/dev
           include: "*"
   ```
 
-- 重启`user-service`
+- 重启`sys-user`
 
 - 修改`configure-repo中的配置并提交`，访问`http://localhost:7000/value/env`
 
@@ -3596,7 +3576,7 @@ status:
 
 ###### 实践
 
-分别对`bill-service`和`user-service`进行改造：
+分别对`bill-service`和`sys-user`进行改造：
 
 pom.xml中添加：
 
@@ -3625,7 +3605,7 @@ logging:
 
 访问zuul网关的接口` http://localhost:10000/apis/bill-service/bill/user/2 `
 
-2020-11-14 19:28:49.274 DEBUG [bill-service,949aa3570daa1031,43ea952f1e5e36eb,true] 36852 --- [-user-service-6] c.s.i.w.c.f.TraceLoadBalancerFeignClient : Before send
+2020-11-14 19:28:49.274 DEBUG [bill-service,949aa3570daa1031,43ea952f1e5e36eb,true] 36852 --- [-sys-user-6] c.s.i.w.c.f.TraceLoadBalancerFeignClient : Before send
 
 ```
 bill-service,949aa3570daa1031,43ea952f1e5e36eb,true
