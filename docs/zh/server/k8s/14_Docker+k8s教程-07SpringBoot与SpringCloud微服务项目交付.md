@@ -1436,6 +1436,10 @@ spec:
 ```
 
 > 使用ingress访问eureka,删除上面无头服务
+>
+> 20230403 不能删除以上服务
+>
+> 原因：pod内需要通过 svc访问如，eureka-cluster-0.eureka、eureka-cluster-1.eureka、eureka-cluster-2.eureka
 
 想通过ingress访问eureka，需要使用有头服务
 
