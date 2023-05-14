@@ -1852,7 +1852,7 @@ $ kubectl -n nohi get po
 
 
 
-#### kubernetes对接分部式存储
+#### kubernetes对接分布式存储
 
 ##### PV与PVC快速入门
 
