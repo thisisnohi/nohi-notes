@@ -10,6 +10,7 @@ export const springItems = [
     text: 'Springboot',
     children: [
       "/zh/springboot/SpringbootEvent.md",
+      "/zh/springboot/test/SpringBootTest.md",
     ],
   },
   {
