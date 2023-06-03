@@ -1,4 +1,8 @@
-# SpringBoot 测试
+---
+sidebar: auto
+---
+
+# SpringBootTest
 
 > create by nohi 20230106
 >
