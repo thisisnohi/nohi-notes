@@ -607,17 +607,481 @@ public class FizzBuzzTest {
   }
   ```
 
-  
+## 6 Mockito and SpringBoot
+
+* mock框架
+  * Mockito： spring-boot-starter-test 自带
+  * EasyMock
+  * JMockit
+
+### DAO Mock
+
+> @Mock @InjectMocks
+
+```java
+package nohi.boot.demo.dao;
+
+import lombok.extern.slf4j.Slf4j;
+import nohi.boot.SpringBootTestApplication;
+import nohi.boot.demo.dao.TbUserMapper;
+import nohi.boot.demo.entity.TbUser;
+import nohi.boot.demo.service.TbUserService;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
+
+/**
+ * <h3>SpringCloud2022</h3>
+ *
+ * @author NOHI
+ * @description <p>Mock Dao</p>
+ * @date 2023/05/21 21:45
+ **/
+@Slf4j
+@SpringBootTest(classes = SpringBootTestApplication.class)
+public class MockDaoTest {
+    TbUser firstUser;
+    @Mock
+    private TbUserMapper mapper;
+    @InjectMocks
+    private TbUserService service;
+
+    @BeforeEach
+    public void beforeEach() {
+        log.info("==>beforeEach");
+        firstUser = TbUser.builder().build();
+        firstUser.setId(1);
+        firstUser.setName("NOHI");
+        firstUser.setSex("MAN");
+        firstUser.setPwd("********");
+        firstUser.setEmail("thisisnohi@163.com");
+    }
+
+    @DisplayName("When & Verify")
+    @Test
+    public void modkDao() {
+        Mockito.when(mapper.selectById(1)).thenReturn(firstUser);
+        TbUser user = mapper.selectById(1);
+        Assertions.assertNotNull(user, "User[1] not null");
+        Assertions.assertEquals("NOHI", user.getName(), "User[1].name === NOHI");
+
+        /** 验证mapper.selectById是否被执行 **/
+        Mockito.verify(mapper).selectById(1);
+        // 以下方法未执行，注释去除后，验证报错
+        //Mockito.verify(mapper).selectList(null);
+        /** 验证mapper.selectById执行次数 **/
+        Mockito.verify(mapper, Mockito.times(1)).selectById(1);
+        Mockito.verify(mapper, Mockito.times(0)).selectList(null);
+    }
+}
+```
 
 
 
+### MockBean
+
+> org.mockito.Mock -> org.springframework.boot.test.mock.mockito.MockBean
+>
+> org.mockito.InjectMocks -> org.springframework.beans.factory.annotation.Autowired
+
+```java
+@MockBean
+private TbUserMapper mapper;
+@Autowired
+private TbUserService service;
+```
 
 
 
+## 7 Mock 异常
+
+> 承接上类
+
+```java
+@DisplayName("测试异常验证")
+@Test
+@Order(2)
+public void throwRuntimeError() {
+  Mockito.doThrow(new RuntimeException("TEST")).when(mapper).insert(null);
+
+  /** 新增正常对象不报错 **/
+  Assertions.assertDoesNotThrow(() -> {
+    service.add(firstUser);
+  });
+
+  /** 新增空对象报错 **/
+  TbUser nullObj = null;
+  Assertions.assertThrows(RuntimeException.class, () -> {
+    service.add(nullObj);
+  });
+}
+
+@DisplayName("测试不同场景")
+@Test
+@Order(3)
+public void testMocks() {
+  Mockito.doThrow(new RuntimeException("TEST")).when(mapper).insert(null);
+
+  Mockito.when(mapper.insert(firstUser)).thenThrow(new RuntimeException("NOHI")).thenReturn(1);
+
+  /** 新增对象报错 **/
+  Assertions.assertThrows(RuntimeException.class, () -> {
+    service.add(firstUser);
+  });
+
+  /** 正常返回 **/
+  Assertions.assertEquals(1, service.add(firstUser));
+}
+```
+
+## 8 Reflection
+
+非public 类、方法 无法调用、修改值
+
+Spring提供`ReflectionTestUtils` get/set 非public字段，执行非public 方法
+
+* `ReflectionTestUtils.*setField*(studentOne, "id", 1);`
+* `ReflectionTestUtils.*getField*(studentOne, "id")`
+* `ReflectionTestUtils.*invokeMethod*(studentOne, "getFirstNameAndId")`
+
+```java 
+@DisplayName("访问私有属性")
+@Test
+public void getPrivateField() {
+  assertEquals(1, ReflectionTestUtils.getField(studentOne, "id"));
+}
+
+@DisplayName("访问私有方法")
+@Test
+public void invokePrivateMethod() {
+  assertEquals("Eric 1",
+               ReflectionTestUtils.invokeMethod(studentOne, "getFirstNameAndId"),
+               "Fail private method not call");
+}
+```
 
 
 
+## 9 Mock数据初始化
 
+
+
+### mock初始化
+
+```java 
+@Slf4j
+@SpringBootTest(classes = SpringBootTestApplication.class)
+@DisplayName("数据库初始化")
+public class MockJdbcInitTest {
+
+    static int id = 10000;
+
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private TbUserService service;
+
+
+    @BeforeEach
+    public void beforeEach() {
+        log.info("===>beforeEach ===> 准备参数");
+        jdbcTemplate.execute("INSERT INTO `t_user` VALUES (" + (id + 1) + ", '张三', '男', 'aaaa', '12314@qq.com');");
+        jdbcTemplate.execute("INSERT INTO `t_user` VALUES (" + (id + 2) + ", '李四', '男', 'aaaa', '12314@qq.com');");
+        jdbcTemplate.execute("INSERT INTO `t_user` VALUES (" + (id + 4) + ", '王五', '男', 'aaaa', '12314@qq.com');");
+        jdbcTemplate.execute("INSERT INTO `t_user` VALUES (" + (id + 5) + ", '赵六', '男', 'aaaa', '12314@qq.com');");
+        jdbcTemplate.execute("INSERT INTO `t_user` VALUES (" + (id + 6) + ", '宋七', '男', 'aaaa', '12314@qq.com');");
+    }
+
+    @AfterEach
+    public void afterEach(){
+        log.info("===>afterEach ===> 清理现场");
+        jdbcTemplate.execute("delete from t_user where id >" + id);
+    }
+
+    /**
+     * 查询初始化数据
+     */
+    @DisplayName("查询初始化数据")
+    @Test
+    public void getInitData() {
+        TbUser tbUser = service.queryById(id + 1);
+        Assertions.assertNotNull(tbUser, (id+1) + " must exists");
+    }
+}
+```
+
+### SpringBoot初始化
+
+```yaml
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    #url: jdbc:h2:mem:test  内存模式，数据不会持久化
+    #    url:jdbc:h2:~/test  嵌入模式，数据文件存储在用户目录test开头的文件中
+    #    url:jdbc:h2:tcp//localhost/〜/test 远程模式，访问远程的h2 数据库
+    # 如果需要数据本地化，则改成 file 方式
+    #jdbc:h2:file: ${HOME}/data/sqlite3/testDB;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:~/data/sqlite3/test
+    username: sa
+    password: 123456
+  h2:
+    console:
+      path: /h2-console
+      enabled: true
+  sql:
+    init:
+      # 初始化表
+			schema-locations: classpath:db/01_ddl.sql
+			# 初始化数据
+      data-locations: classpath:db/02_data.sql
+      mode: always
+      continue-on-error: true
+```
+
+### `@sql`
+
+> spring提供
+
+```java 
+@DisplayName("@sql初始化数据")
+@Sql("/db/02_data_20000.sql")
+@Test
+public void sqlInit() {
+  Map<String, Object> map = new HashMap<>();
+  map.put("idMin", 20000);
+  List<TbUser> list = service.selectByExample(map);
+  Assertions.assertEquals(5, list.size(), "id >= 20000 数据量为5");
+}
+```
+
+## 10 MVC Controller
+
+Spring Testing Support
+
+* Mock object for web, REST API..
+* MockMvc
+* Spring MVC  request/response
+* 容器支持
+
+步骤
+
+* `@AutoConfigureMockMvc`注释添加
+* `MockMvc`
+* 调用请求
+* 定义预期结果
+* 判断结果
+
+### MockMvc
+
+```java 
+@DisplayName("WEB Controller测试")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+public class UserControolerMockMvc {
+
+    @Autowired
+    private UserController helloController;
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @DisplayName("controller是否为空")
+    @Test
+    public void testNotNull() {
+        Assertions.assertThat(helloController).isNotNull();
+    }
+
+    @DisplayName("MVC返回值测试")
+    @Test
+    public void controllerRespMsg() throws Exception {
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/hello/spring"))
+                .andDo(MockMvcResultHandlers.print())
+                // 返回状态是否正确
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("Hello spring"));
+    }
+
+    @DisplayName("MVC返回页面")
+    @Test
+    public void controllerRespPage() throws Exception {
+        // 调用
+        MvcResult mvcResult = this.mockMvc.perform(MockMvcRequestBuilders.get("/"))
+                .andDo(MockMvcResultHandlers.print())
+                // 返回状态是否正确
+                .andExpect(MockMvcResultMatchers.status().isOk()).andReturn();
+
+        ModelAndView modelAndView = mvcResult.getModelAndView();
+        ModelAndViewAssert.assertViewName(modelAndView, "/index");
+    }
+}
+```
+
+### MockHttpServletResponse
+
+```java 
+@BeforeAll
+public static void setup() {
+  request = new MockHttpServletRequest();
+  request.addParameter("name", "张三");
+  request.addParameter("sex", "男");
+  request.addParameter("mail", "zs@163.com");
+}
+
+@DisplayName("MVC返回JSON")
+@Test
+public void addUserTest() throws Exception {
+  // 调用
+  MockHttpServletResponse mvcResult = this.mockMvc.perform(
+    MockMvcRequestBuilders.post("/user/add")
+    .contentType(MediaType.APPLICATION_JSON)
+    .characterEncoding("UTF-8")
+    .param("name", request.getParameterValues("name"))
+    .param("sex", request.getParameterValues("sex"))
+    .param("mail", request.getParameterValues("mail"))
+  )
+    .andDo(MockMvcResultHandlers.print())
+    // 返回状态是否正确
+    .andExpect(MockMvcResultMatchers.status().isOk())
+    .andReturn().getResponse();
+  mvcResult.setCharacterEncoding("UTF-8");
+  log.info("mvcResult:{}", mvcResult.getContentAsString());
+}
+```
+
+
+
+## 11 DAO 事务
+
+```java 
+package nohi.boot.demo.service;
+
+import nohi.boot.demo.entity.TbUser;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * <h3>SpringBootTest</h3>
+ *
+ * @author NOHI
+ * @description <p></p>
+ * @date 2023/01/13 13:07
+ **/
+@SpringBootTest
+@DisplayName("Service测试")
+class TbUserServiceTest {
+
+    @BeforeEach
+    void setUp() {
+    }
+
+    @AfterEach
+    void tearDown() {
+    }
+
+    @Autowired
+    TbUserService userService;
+
+    @Test
+    @DisplayName("查询所有User数据")
+    public void queryAll() {
+        userService.queryAll().forEach(System.out::println);
+    }
+
+    /**
+     * 批量插入数据-不回滚
+     */
+    @Test
+    @DisplayName("批量插入数据-不回滚")
+    public void add() {
+        List<TbUser> users = new ArrayList<>();
+        for (int i = 0; i < 15; ++i) {
+            TbUser user = TbUser.builder().id(i + 1).name("test" + i).sex(i % 2 == 0 ? "男" : "女").pwd("aaaa").email("123" + i + "@qq.com").build();
+            users.add(user);
+        }
+        users.forEach(System.out::println);
+        userService.add(users);
+    }
+
+    /**
+     * 批量插入数据-回滚
+     */
+    @Test
+    @Transactional
+    @DisplayName("批量插入数据-回滚")
+    public void batchInserAndRollback() {
+        List<TbUser> users = new ArrayList<>();
+        for (int i = 0; i < 5; ++i) {
+            TbUser user = TbUser.builder().id(i + 11).name("test" + i).sex(i % 2 == 0 ? "男" : "女").pwd("aaaa").email("123" + i + "@qq.com").build();
+            users.add(user);
+        }
+        users.forEach(System.out::println);
+        userService.add(users);
+
+        // 打印所有数据
+        userService.queryAll().forEach(System.out::println);
+    }
+
+    @Test
+    public void queryByIds() {
+        userService.queryByIds(Set.of(1, 2, 3));
+        userService.queryByName("test1").forEach(System.out::println);
+        userService.queryByName2("test1").forEach(System.out::println);
+        TbUser user = userService.queryById(TbUser.builder().id(2).build());
+        System.out.println(user);
+        userService.queryByNameMap("test1").forEach(System.out::println);
+        System.out.println(userService.count());
+    }
+
+    @Test
+    public void query() {
+        userService.queryAll().forEach(System.out::println);
+        userService.queryByName("test1").forEach(System.out::println);
+        userService.queryByName2("test1").forEach(System.out::println);
+        TbUser user = userService.queryById(TbUser.builder().id(2).build());
+        System.out.println(user);
+        userService.queryByNameMap("test1").forEach(System.out::println);
+        System.out.println(userService.count());
+    }
+
+    @Test
+    public void delete() {
+        TbUser user = TbUser.builder().id(2).build();
+        userService.deleteById(user);
+
+        userService.deleteBy("name", "test15");
+
+        userService.deleteByIds();
+
+    }
+
+    @Test
+    public void change() {
+        TbUser user1 = TbUser.builder().name("蔡徐坤").build();
+        userService.changeBy(user1, "sex", "男");
+
+        user1.setName("蔡徐坤2");
+        userService.changeUserById(user1);
+    }
+}
+```
 
 
 
