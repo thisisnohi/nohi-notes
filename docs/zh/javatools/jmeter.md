@@ -12,6 +12,14 @@
 
 
 
+### 插件
+
+1. **Transactions per Second：**TPS插件
+2. **Response Times Over Time：**事务响应时间插件
+3. **Active Threads Over Time：**每秒的活动线程数插件
+
+
+
 ## 步骤
 
 * 新建测试计划TestPlan
