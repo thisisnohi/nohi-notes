@@ -432,6 +432,14 @@ Finished generating 'nohi-web-native' in 53.2s.
 
 ##  FastJson转换问题
 
+
+
+`mvn -Pnative -DskipTests clean package` 打包成功后，运行程序出现
+
+`JSONObject.toJSONString` 转换JSON结果为空，以下为解决过程及坑
+
+
+
 ### 20230707
 
 * 根据fastjson2 git 项目 [example-graalvm-native] 2.0.35-SNAPSHOT 修改依赖 
@@ -486,6 +494,8 @@ mvn -Pnative -Dmaven.test.skip=true clean package
 > 代码: [nohi-web-native]()
 >
 > [fastjson2](https://github.com/alibaba/fastjson2/tree/main/example-graalvm-native)
+
+虽可以解决json转换问题，但对象如果很多，使用仍不方便。
 
 ```java
 public void registerRsaRespItemVO() {
