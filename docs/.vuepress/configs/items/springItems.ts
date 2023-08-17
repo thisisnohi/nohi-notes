@@ -11,6 +11,7 @@ export const springItems = [
     children: [
       "/zh/springboot/SpringbootEvent.md",
       "/zh/springboot/test/SpringBootTest.md",
+      "/zh/springboot/SpringBootValidation.md",
     ],
   },
   {

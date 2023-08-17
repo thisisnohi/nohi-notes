@@ -152,7 +152,7 @@ public ThreadPoolExecutor(int corePoolSize,int maximumPoolSize,long keepAliveTim
   1. AbortPolicy：直接抛出异常，阻止系统正常工作。
   2. CallerRunsPolicy：只要线程未关闭，该策略直接在调用者线程中，运行当前被丢弃的任务。
   3. DiscardOldestPolicy：该策略将丢弃最老的一个请求，也就是即将被执行的一个人任务，并尝试再次提交当前任务。
-  4. DiscardPolicy：该策略默默的丢弃无法处理对
+  4. DiscardPolicy：该策略默默的丢弃无法处理
   5. 当然也可以根据应用场景需要来实现RejectedExecutionHandler接口自定义策略。
 
 * DEMO
