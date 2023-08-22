@@ -1,11 +1,7 @@
-// @ts-ignore
 import { defineUserConfig } from "vuepress";
-// @ts-ignore
 import { defaultTheme } from "@vuepress/theme-default";
-import { head, navbarEn, navbarZh, sidebarEn, sidebarZh } from './configs';
-// @ts-ignore
+import { head, navbarEn, navbarZh, sidebarEn, sidebarZh } from "./configs";
 import { searchPlugin } from '@vuepress/plugin-search'
-// @ts-ignore
 import { backToTopPlugin } from '@vuepress/plugin-back-to-top'
 
 export default defineUserConfig({

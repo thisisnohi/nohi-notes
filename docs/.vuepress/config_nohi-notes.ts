@@ -2,6 +2,7 @@ import { defineUserConfig } from "vuepress";
 import { defaultTheme } from "@vuepress/theme-default";
 import { head, navbarEn, navbarZh, sidebarEn, sidebarZh } from './configs';
 import { searchPlugin } from '@vuepress/plugin-search'
+import { backToTopPlugin } from '@vuepress/plugin-back-to-top'
 
 export default defineUserConfig({
   // set site base to default value
@@ -17,16 +18,17 @@ export default defineUserConfig({
     '/': {
       lang: 'en-US',
       title: 'NOHI Notes',
-      description: 'NOHI Notes',
+      description: 'NOHI Notes with Vuepress 2.0.0-beta',
     },
     '/zh/': {
       lang: 'zh-CN',
       title: 'NOHI 笔记',
-      description: '使用VuePress制作的个人笔记',
+      description: '使用VuePress 2.0.0-beta 制作的个人笔记',
     },
   },
 
   plugins: [
+    backToTopPlugin(),
     // 本地搜索
     searchPlugin({
       locales: {
@@ -69,13 +71,13 @@ export default defineUserConfig({
        * Chinese locale config
        */
       '/zh/': {
-        selectLanguageName: '简体中文',
-        selectLanguageText: '选择语言',
-        selectLanguageAriaLabel: '选择语言',
         // navbar
         navbar: navbarZh,
         // sidebar
         sidebar: sidebarZh,
+        selectLanguageName: '简体中文',
+        selectLanguageText: '选择语言',
+        selectLanguageAriaLabel: '选择语言',
         // page meta
         editLinkText: '在 GitHub 上编辑此页',
         lastUpdatedText: '上次更新',
