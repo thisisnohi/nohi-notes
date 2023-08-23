@@ -86,14 +86,9 @@ npx vuepress build
 </CodeGroup>
 
 ### Thanks
-> 在些特别感谢
+> 在此特别感谢
 
 
 <a href="https://www.jetbrains.com/community/opensource/#support" target="_blank" title="JetBrains">
 <img style="width: 120px;" src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo.">
 </a>
-
-###
-<div class="footer" >
-MIT Licensed | Copyright © 2023 <a href="mailto:thisisnohi@163.com">NOHI</a>
-</div>
