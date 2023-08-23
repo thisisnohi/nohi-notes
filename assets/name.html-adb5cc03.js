@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-250e3138","path":"/zh/notes/name.html","title":"名词解释","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1671098497000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/notes/name.md"}');export{t as data};

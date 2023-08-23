@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-be2c6626","path":"/zh/CodeLan/Kotlin.html","title":"Kotlin","lang":"zh-CN","frontmatter":{},"headers":[{"level":2,"title":"类的修饰符","slug":"类的修饰符","link":"#类的修饰符","children":[]}],"git":{"updatedTime":1671098497000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/CodeLan/Kotlin.md"}');export{t as data};

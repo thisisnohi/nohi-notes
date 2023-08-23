@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-b66a00fe","path":"/zh/springboot/skyworking.html","title":"skyworking","lang":"zh-CN","frontmatter":{"sidebar":"auto"},"headers":[],"git":{"updatedTime":1671098497000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/springboot/skyworking.md"}');export{t as data};

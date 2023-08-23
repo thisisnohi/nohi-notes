@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-d7033256","path":"/zh/db/NoSql.html","title":"Nosql","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1692247392000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/db/NoSql.md"}');export{t as data};

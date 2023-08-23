@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-79432748","path":"/zh/CodeLan/python/python-%E7%AC%AC%E4%B8%80%E7%88%AC.html","title":"第一爬","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1671098497000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/CodeLan/python/python-第一爬.md"}');export{t as data};

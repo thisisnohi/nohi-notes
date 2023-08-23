@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-63005aac","path":"/zh/notes/sonar.html","title":"sonar","lang":"zh-CN","frontmatter":{},"headers":[{"level":3,"title":"安装","slug":"安装","link":"#安装","children":[]}],"git":{"updatedTime":1671098497000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/notes/sonar.md"}');export{t as data};

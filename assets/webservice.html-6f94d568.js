@@ -1,0 +1,1 @@
+const e=JSON.parse('{"key":"v-0685ad22","path":"/zh/notes/webservice.html","title":"Webservice","lang":"zh-CN","frontmatter":{},"headers":[],"git":{"updatedTime":1671098497000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/notes/webservice.md"}');export{e as data};

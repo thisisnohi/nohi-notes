@@ -1,0 +1,1 @@
+const t=JSON.parse('{"key":"v-1f95e900","path":"/zh/db/mysql.html","title":"mysql","lang":"zh-CN","frontmatter":{},"headers":[{"level":2,"title":"创建用户","slug":"创建用户","link":"#创建用户","children":[]}],"git":{"updatedTime":1671098497000,"contributors":[{"name":"NOHI","email":"thisisnohi@163.com","commits":1}]},"filePathRelative":"zh/db/mysql.md"}');export{t as data};

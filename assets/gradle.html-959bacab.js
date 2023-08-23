@@ -1,0 +1,11 @@
+import{_ as e,p as a,q as i,a1 as l}from"./framework-449724a9.js";const s={},d=l(`<h1 id="gradle" tabindex="-1"><a class="header-anchor" href="#gradle" aria-hidden="true">#</a> Gradle</h1><ul><li>参照：Gradle下载安装教程 https://zhuanlan.zhihu.com/p/460771551</li></ul><div class="language-text line-numbers-mode" data-ext="text"><pre class="language-text"><code>gradle projects 查看工程信息
+gradle tasks 查看任务信息
+gradle task name 执行task任务
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div><ul><li><p>gradlew checkstyleNohttp --stacktrace</p></li><li><p>gradle build -x test 跳过test</p><ul><li><div class="language-bash line-numbers-mode" data-ext="sh"><pre class="language-bash"><code>gradle <span class="token builtin class-name">test</span> 手工执行test
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div></div></div></li></ul></li></ul><h2 id="设置" tabindex="-1"><a class="header-anchor" href="#设置" aria-hidden="true">#</a> 设置</h2><ul><li><p>指定版本</p><ul><li><p>gradle/wrapper/gradle-wrapper.properties</p><div class="language-text line-numbers-mode" data-ext="text"><pre class="language-text"><code>distributionUrl=https\\://services.gradle.org/distributions/gradle-6.1-all.zip
+distributionUrl=file:/Users/nohi/data/gradle-6.5-all.zip
+** file: 为从本地获取无需下载
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div></li></ul></li></ul><h2 id="dep" tabindex="-1"><a class="header-anchor" href="#dep" aria-hidden="true">#</a> dep</h2><div class="language-text line-numbers-mode" data-ext="text"><pre class="language-text"><code>   compile group: &#39;javax.servlet&#39;, name:&#39;javax.servlet-api&#39;, version: &#39;3.1.0&#39;
+//    optional(&quot;javax.servlet:javax.servlet-api:3.1.0&quot;)
+    compile(&#39;commons-logging:commons-logging:1.2&#39;)
+</code></pre><div class="line-numbers" aria-hidden="true"><div class="line-number"></div><div class="line-number"></div><div class="line-number"></div></div></div>`,8),r=[d];function n(t,c){return a(),i("div",null,r)}const o=e(s,[["render",n],["__file","gradle.html.vue"]]);export{o as default};
