@@ -3,9 +3,9 @@ sidebar: auto
 ---
 # Linux
 
-### 常用命令
 
-#### 网络
+
+## 网络
 
 * Centos8
 
@@ -33,14 +33,71 @@ sidebar: auto
     GATEWAY=10.0.0.1
     ```
 
-    
 
-#### 文件
+* 抓包
+
+  > 参考：https://zhuanlan.zhihu.com/p/74812069
+
+  ```
+  # 抓取所有包，写到文件result.cap
+  tcpdump -w result.cap
+  
+  tcpdump -nX 
+  tcpdump tcp -s 0 port 9116 -w xxx.cap
+  -- 指定网卡
+  tcpdump -i eth0 port 3128 -w xxx.cap
+  tcpdump -i eht0 host 128.1.80.110 -w xxx.cap
+  # 抓取源地址
+  tcpdump src host 192.168.1.100 -w result.cap
+  # 抓取地址
+  tcpdump host 192.168.1.100 -w result.cap
+  # 抓取目的地址
+  tcpdump dest host 192.168.1.100 -w result.cap
+  # 抓取主机地址
+  tcpdump -i eth0 -vnn host 192.168.1.100
+  # 抓取包含192.168.1.0/24网段的数据包
+  tcpdump -i eth0 -vnn net 192.168.1.0/24
+  # 抓取网卡eth0上所有包含端口22的数据包
+  tcpdump -i eth0 -vnn port 22
+  
+  # 抓取指定协议格式的数据包，协议格式可以是「udp,icmp,arp,ip」中的任何一种,例如以下命令：
+  tcpdump udp  -i eth0 -vnn
+  # 抓取经过 eth0 网卡的源 ip 是 192.168.1.100 数据包，src参数表示源。
+  
+  ```
+
+
+
+## 文件
 
 * 查看文件inode `df -ia`
+
 * 查看文件名柄: lsof -i:port
 
-#### 其他
+* sed
+
+  ```
+  // 去除bom 直接覆盖老文件
+  sed -i '1s/^\xEF\xBB\xBF//' *.sql
+  ```
+
+* 转换字符集
+
+  ```
+  -- mac 转换字符集
+  find *.sql -exec sh -c "iconv -f utf-8 -t GBK {} > ./new/{}" \;
+  ```
+
+* 清理文件
+
+  ```
+  -- 删除 ~/file/input/BERS/ 一年前{365}数据 {} 前后有空格
+  find ~/file/input/BERS/ -name "*.zip" -mtime +365 -exec rm {} \;
+  ```
+
+  
+
+## 其他
 
 * 查看端口占用 netstate -an | grep 9000
 
@@ -79,13 +136,6 @@ sidebar: auto
 			%idle      在internal时间段里，CPU除去等待磁盘IO操作外的因为任何原因而空闲的时间闲置时间(%) (idle/total)*100
 	
 * 时区：cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-
-### file
-
-```
--- 删除 ~/file/input/BERS/ 一年前{365}数据 {} 前后有空格
-find ~/file/input/BERS/ -name "*.zip" -mtime +365 -exec rm {} \;
-```
 
 ## shell
 
@@ -349,28 +399,3 @@ A免密操作B
 
 
 
-## 网络抓包
-
-* 查看网卡: tcpdump -D 
-
-* 抓包：tcpdump -i 网卡 -w  /root/1.pcap  请求完成后，断开命令即可生成文件
-
-* 使用 wireshark分析文件
-
-  * 过滤源ip、目的ip
-
-    ```
-    查找目的地址为192.168.101.8的包，ip.dst==192.168.101.8；查找源地址为ip.src==1.1.1.1
-    ```
-
-  * 端口过滤: tcp.port==80
-
-  * 协议过滤: http
-
-  * 过滤get包
-
-    * ```
-      http.request.method=="GET",过滤post包，http.request.method=="POST
-      ```
-
-  * 连接符and的使用：ip.src==192.168.101.8 and http
