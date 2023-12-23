@@ -65,8 +65,6 @@ sidebar: auto
                     serverConfig.getEvictionIntervalTimerInMs());
     ```
 
-    
-
 * `InstanceRegistry`
 
   * cancel
