@@ -7,6 +7,8 @@
 > 参考：https://www.rust-lang.org/zh-CN/learn/get-started
 >
 > Rust 程序设计语言 简体中文版：https://kaisery.github.io/trpl-zh-cn/
+>
+> 跟大佬学习RUST：视频：https://www.bilibili.com/video/BV1RZ4y1a7iF/?spm_id_from=333.788.recommend_more_video.9
 
 ## 一、常用概念
 
@@ -616,7 +618,7 @@ if let Some(max) = config_max {
 * 可以认为 `if let` 是 `match` 的一个语法糖，它当值匹配某一模式时执行代码而忽略所有其他值。
 * 可以在 `if let` 中包含一个 `else`。`else` 块中的代码与 `match` 表达式中的 `_` 分支块中的代码相同，这样的 `match` 表达式就等同于 `if let` 和 `else`。
 
-## 使用包、Crate 和模块管理不断增长的项目
+## 7 使用包、Crate 和模块管理不断增长的项目
 
 - **包**（*Packages*）：Cargo 的一个功能，它允许你构建、测试和分享 crate。
 - **Crates** ：一个模块的树形结构，它形成了库或二进制项目。
@@ -640,6 +642,18 @@ if let Some(max) = config_max {
 * crate 根文件将由 Cargo 传递给 `rustc` 来实际构建库或者二进制项目。
 
 **如果一个包同时含有 *src/main.rs* 和 *src/lib.rs*，则它有两个 crate：一个二进制的和一个库的，且名字都与包相同。通过将文件放在 *src/bin* 目录下，一个包可以拥有多个二进制 crate：每个 *src/bin* 下的文件都会被编译成一个独立的二进制 crate。**
+
+```rust
+lib2
+	src
+		bin
+      main.rs
+      main1.rs
+      main2.rs
+	lib.rs
+```
+
+
 
 
 
@@ -699,6 +713,575 @@ fn main() {
   ```
 
 #### 在模块中对相关代码进行分组
+
+*模块* 让我们可以将一个 crate 中的代码进行分组，以提高可读性与重用性。因为一个模块中的代码默认是私有的，所以还可以利用模块控制项的 *私有性*。私有项是不可为外部使用的内在详细实现。我们也可以将模块和它其中的项标记为公开的，这样，外部代码就可以使用并依赖与它们。
+
+src/lib.rs
+
+```rust
+mod front_of_house {
+    mod hosting {
+        fn add_to_waitlist() {}
+
+        fn seat_at_table() {}
+    }
+
+    mod serving {
+        fn take_order() {}
+
+        fn serve_order() {}
+
+        fn take_payment() {}
+    }
+}
+```
+
+* 模块，是以 `mod` 关键字为起始，然后指定模块的名字，并且用花括号包围模块的主体
+
+* 在模块内，我们还可以定义其他的模块
+
+* 模块还可以保存一些定义的其他项，比如结构体、枚举、常量、特性、或者函数。
+
+* *模块树*
+
+  ```rust
+  crate
+   └── front_of_house
+       ├── hosting
+       │   ├── add_to_waitlist
+       │   └── seat_at_table
+       └── serving
+           ├── take_order
+           ├── serve_order
+           └── take_payment
+  ```
+
+### 引用模块项目的路径
+
+路径有两种形式：
+
+- **绝对路径**（*absolute path*）是以 crate 根（root）开头的全路径；对于外部 crate 的代码，是以 crate 名开头的绝对路径，对于当前 crate 的代码，则以字面值 `crate` 开头。
+- **相对路径**（*relative path*）从当前模块开始，以 `self`、`super` 或当前模块的标识符开头。
+
+**属性**
+
+* 在 Rust 中，默认所有项（函数、方法、结构体、枚举、模块和常量）对父模块都是私有的
+
+* 父模块中的项不能使用子模块中的私有项，但是子模块中的项可以使用它们父模块中的项。
+
+#### 使用 pub 关键字暴露路径
+
+```rust
+mod front_of_house {
+    pub mod hosting {
+        pub fn add_to_waitlist() {}
+
+        fn seat_at_table() {}
+    }
+    mod serving {
+        fn take_order() {}
+
+        fn serve_order() {}
+
+        fn take_payment() {}
+    }
+}
+pub fn eat_at_restaurant() {
+    // 绝对路径
+    crate::front_of_house::hosting::add_to_waitlist();
+    // 相对路径
+    front_of_house::hosting::add_to_waitlist();
+}
+
+```
+
+#### super 开始的相对路径
+
+```rust
+fn deliver_order() {}
+
+mod back_of_house {
+    fn fix_incorrect_order() {
+        cook_order();
+        super::deliver_order();
+    }
+    fn cook_order() {}
+}
+```
+
+#### 创建公有的结构体和枚举
+
+```rust
+mod back_of_house {
+    pub struct Breakfast {
+        pub toast: String,
+        seasonal_fruit: String,
+    }
+
+    impl Breakfast {
+        pub fn summer(toast: &str) -> Breakfast {
+            Breakfast {
+                toast: String::from(toast),
+                seasonal_fruit: String::from("peaches"),
+            }
+        }
+    }
+}
+
+pub fn eat_at_restaurant() {
+    // 在夏天订购一个黑麦土司作为早餐
+    let mut meal = back_of_house::Breakfast::summer("Rye");
+    // 改变主意更换想要面包的类型
+    meal.toast = String::from("Wheat");
+    println!("I'd like {} toast please", meal.toast);
+
+    // 如果取消下一行的注释代码不能编译；
+    // 不允许查看或修改早餐附带的季节水果
+    // meal.seasonal_fruit = String::from("blueberries");
+}
+```
+
+* 结构体遵循常规，内容全部是私有的，除非使用 `pub` 关键字。
+
+* 枚举设为公有，则它的所有成员都将变为公有
+
+  ```rust
+  mod back_of_house {
+      pub enum Appetizer {
+          Soup,
+          Salad,
+      }
+  }
+  pub fn eat_at_restaurant() {
+      let order1 = back_of_house::Appetizer::Soup;
+      let order2 = back_of_house::Appetizer::Salad;
+  }
+  ```
+
+### 使用 use 关键字将路径引入作用域
+
+```rust
+use crate::front_of_house::hosting;
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+
+//注意 use 只能创建 use 所在的特定作用域内的短路径。
+//示例 7-12 将 eat_at_restaurant 函数移动到了一个叫 customer 的子模块，
+//这又是一个不同于 use 语句的作用域，所以函数体不能编译。
+// 以下编译通不过
+use crate::front_of_house::hosting;
+mod customer {
+    pub fn eat_at_restaurant() {
+        hosting::add_to_waitlist();
+    }
+}
+```
+
+#### 创建惯用的 use 路径
+
+
+
+* 使用 `use` 引入结构体、枚举和其他项时，习惯是指定它们的完整路径。
+
+  ```rust
+  // 将 HashMap 结构体引入二进制 crate 作用域的习惯用法
+  use std::collections::HashMap;
+  
+  fn main() {
+      let mut map = HashMap::new();
+      map.insert(1, 2);
+  }
+  ```
+
+* 引入相同名称的项
+
+  ```rust
+  use std::fmt;
+  use std::io;
+  
+  fn function1() -> fmt::Result {
+      // --snip--
+  }
+  fn function2() -> io::Result<()> {
+      // --snip--
+  }
+  ```
+
+* 使用 as 关键字提供新的名称
+
+  ```rust
+  use std::fmt::Result;
+  use std::io::Result as IoResult;
+  
+  fn function1() -> Result {
+      // --snip--
+  }
+  fn function2() -> IoResult<()> {
+      // --snip--
+  }
+  ```
+
+#### 使用 pub use 重导出名称
+
+*重导出*（*re-exporting*）”：我们不仅将一个名称导入了当前作用域，还允许别人把它导入他们自己的作用域。
+
+```rust
+pub use crate::front_of_house::hosting;
+
+pub fn eat_at_restaurant() {
+    hosting::add_to_waitlist();
+}
+```
+
+#### 使用外部包
+
+项目中使用 `rand`，在 *Cargo.toml* 中加入了如下行：
+
+```rust
+rand = "0.8.5"
+```
+
+```rust
+use rand::Rng;
+
+fn main() {
+    let secret_number = rand::thread_rng().gen_range(1..=100);
+}
+```
+
+`use std::collections::HashMap;`
+
+#### 嵌套路径来消除大量的 use 行
+
+```rust
+use std::{cmp::Ordering, io};
+use std::io::{self, Write};
+```
+
+#### 通过 glob 运算符将所有的公有定义引入作用域
+
+```rust
+use std::collections::*;
+```
+
+### 将模块拆分成多个文件
+
+* `src/lib.rs`
+
+  ```rust
+  mod front_of_house;
+  pub use crate::front_of_house::hosting;
+  pub fn eat_at_restaurant() {
+      hosting::add_to_waitlist();
+  }
+  ```
+
+* `src/front_of_house.rs`
+
+  ```rust
+  pub mod hosting {
+      pub fn add_to_waitlist() {}
+  }
+  ```
+
+* 另一种文件路径
+
+  对于 front_of_house 的子模块 hosting，编译器会在如下位置查找模块代码：
+
+  * src/front_of_house/hosting.rs（我们所介绍的）
+  * src/front_of_house/hosting/mod.rs（老风格，不过仍然支持）
+
+  
+
+## 8 集合
+
+集合指向的数据是储存在堆上的，这意味着数据的数量不必在编译时就已知，并且还可以随着程序的运行增长或缩小。每种集合都有着不同功能和成本。
+
+- *vector* 允许我们一个挨着一个地储存一系列数量可变的值
+- **字符串**（*string*）是字符的集合。我们之前见过 `String` 类型，不过在本章我们将深入了解。
+- **哈希 map**（*hash map*）允许我们将值与一个特定的键（key）相关联。这是一个叫做 *map* 的更通用的数据结构的特定实现。
+
+### 使用 Vector 储存列表
+
+`Vec<T>`，也被称为 *vector*。vector 允许我们在一个单独的数据结构中储存多于一个的值，它在内存中彼此相邻地排列所有的值。vector 只能储存相同类型的值
+
+#### 初始化vector
+
+```rust
+// 没有初始值，需要指定一个类型
+let v: Vec<i32> = Vec::new();
+
+println!("v1 {:?}", v);
+
+// vec! 宏，初始化vec
+let mut v = vec![1, 2, 3];
+println!("v2 {:?}", v);
+v.push(5);
+v.push(6);
+v.push(7);
+v.push(8);
+println!("v3 {:?}", v);
+```
+
+#### 读取vector
+
+> 通过索引或使用 `get` 方法
+
+```rust
+let v0 = v[0];
+println!("v0:{v0}");
+let v2 = v[2];
+println!("v2:{v2}");
+
+let v3 = v.get(3);
+println!("v3:{:?}", v3);
+
+// [] 方法，当引用一个不存在的元素时 Rust 会造成 panic。
+let v100 = v[100];
+// 当 get 方法被传递了一个数组外的索引时，它不会 panic 而是返回 None
+let v100 = v.get(100);
+```
+
+#### 遍历
+
+```rust
+println!("===>遍历vector");
+let v = vec![100, 32, 57];
+for i in &v {
+  println!("{i}");
+}
+
+// 修改vet里的每一个元素
+let mut v = vec![100, 32, 57];
+for i in &mut v {
+  *i += 50;
+}
+println!("v: {:?}", v);
+```
+
+为了修改可变引用所指向的值，在使用 `+=` 运算符之前必须使用解引用运算符（`*`）获取 `i` 中的值
+
+
+
+#### 使用枚举来储存多种类型
+
+vector 只能储存相同类型的值。枚举的成员都被定义为相同的枚举类型，所以当需要在 vector 中储存不同类型值时，我们可以定义并使用一个枚举！
+
+* Rust 在编译时就必须准确的知道 vector 中类型的原因在于它需要知道储存每个元素到底需要多少内存
+* 可以准确的知道这个 vector 中允许什么类型。
+* 使用枚举外加 `match` 意味着 Rust 能在编译时就保证总是会处理所有可能的情况
+
+### 使用字符串储存 UTF-8 编码的文本
+
+> Rust 倾向于确保暴露出可能的错误，字符串是比很多程序员所想象的要更为复杂的数据结构，以及 UTF-8。
+>
+> 字符串就是作为字节的集合外加一些方法实现的，当这些字节被解释为文本时，这些方法提供了实用的功能。
+
+Rust 的核心语言中只有一种字符串类型：字符串 slice `str`，它通常以被借用的形式出现，`&str`。
+
+字符串（`String`）类型由 Rust 标准库提供，而不是编入核心语言，它是一种可增长、可变、可拥有、UTF-8 编码的字符串类型。
+
+`String::from` 和 `.to_string`
+
+```rust
+let mut s = String::new();
+let data = "initial contents";
+let s = data.to_string();
+// 该方法也可直接用于字符串字面值：
+let s = "initial contents".to_string();
+let s = String::from("initial contents");
+
+let hello = String::from("السلام عليكم");
+let hello = String::from("Dobrý den");
+let hello = String::from("Hello");
+let hello = String::from("שָׁלוֹם");
+let hello = String::from("नमस्ते");
+let hello = String::from("こんにちは");
+let hello = String::from("안녕하세요");
+let hello = String::from("你好");
+let hello = String::from("Olá");
+let hello = String::from("Здравствуйте");
+let hello = String::from("Hola");
+```
+
+* 更新字符串
+
+  * 使用 push_str 和 push 附加字符串
+
+    ```rust
+    let mut s = String::from("foo");
+    s.push_str("bar");
+    
+    let mut s1 = String::from("foo");
+    let s2 = "bar";
+    s1.push_str(s2);
+    println!("s2 is {s2}");
+    ```
+
+  * 使用 + 运算符或 format! 宏拼接字符串
+
+    ```rust
+    let s1 = String::from("Hello, ");
+    let s2 = String::from("world!");
+    let s3 = s1 + &s2; // 注意 s1 被移动了，不能继续使用
+    
+    // println!("s1 is {s1}"); // s1被借走了，无法使用
+    println!("s2 is {s3}");
+    ```
+
+    * `s2` 使用了 `&`，意味着我们使用第二个字符串的 **引用** 与第一个字符串相加。
+    * add 调用中使用 &s2 是因为 &String 可以被 强转（coerced）成 &str
+    * add 获取了 self 的所有权，因为 self 没有 使用 &
+
+     **format**
+
+    ```rust
+    let s1 = String::from("tic");
+    let s2 = String::from("tac");
+    let s3 = String::from("toe");
+    
+    let s = format!("{s1}-{s2}-{s3}");
+    ```
+
+* 索引字符串
+
+  > Rust 的字符串不支持索引。即不支持：s1[0];
+  >
+  > 字节、标量值和字形簇
+
+  ```rust
+  let hello = "Здравствуйте";
+  let answer = &hello[0]; // 不支持
+  ```
+
+  
+
+* 字符串 slice
+
+  ```rust
+  let hello = "Здравствуйте";
+  let s = &hello[0..4]; // s 将会是 “Зд”
+  println!("s is {s}")
+  // let s = &hello[0..1]; // 异常
+  ```
+
+* 遍历字符串的方法
+
+  ```rust
+  // 打印char
+  for c in hello.chars() {
+    println!("{c}")
+  }
+  // 打印字节
+  for b in "Зд".bytes() {
+    println!("{b}");
+  }
+  ```
+
+### 使用 Hash Map 储存键值对
+
+> `HashMap<K, V>` 类型储存了一个键类型 `K` 对应一个值类型 `V` 的映射。它通过一个 **哈希函数**（*hashing function*）来实现映射，决定如何将键和值放入内存中。
+
+```rust
+// use
+use std::collections::HashMap;
+
+let mut scores = HashMap::new();
+
+scores.insert(String::from("Blue"), 10);
+scores.insert(String::from("Yellow"), 50);
+println!("scores is {:?}", scores)
+```
+
+* 哈希 map 将它们的数据储存在堆上
+* 键类型是 `String` 而值类型是 `i32`
+* 类似于 vector，哈希 map 是同质的：所有的键必须是相同类型，值也必须都是相同类型。
+
+#### 访问哈希 map 中的值
+
+```rust
+let team_name = String::from("Blue");
+let score = scores.get(&team_name).copied().unwrap_or(0);
+println!("{team_name} is {score}");
+
+// 循环访问
+for (key, value) in &scores {
+  println!("{key}: {value}");
+}
+```
+
+* get 方法返回 Option<&V>，如果某个键在哈希 map 中没有对应的值，get 会返回 None。
+
+* 程序中通过调用 copied 方法来获取一个 Option<i32> 而不是 Option<&i32>，
+
+* 接着调用 unwrap_or 在 scores 中没有该键所对应的项时将其设置为零
+
+#### 哈希 map 和所有权
+
+```rust
+let field_name = String::from("Favorite color");
+let field_value = String::from("Blue");
+
+let mut map = HashMap::new();
+// value moved here
+map.insert(field_name, field_value);
+// 这里 field_name 和 field_value 不再有效，
+// 尝试使用它们看看会出现什么编译错误！
+// println!("{field_name} is {field_value}");
+```
+
+#### 更新哈希 map
+
+* 覆盖一个值
+
+  ```rust
+  let mut scores = HashMap::new();
+  scores.insert(String::from("Blue"), 10);
+  scores.insert(String::from("Blue"), 25);
+  println!("{:?}", scores);
+  ```
+
+* 只在键没有对应值时插入键值对
+
+  ```rust
+  scores.entry(String::from("Yellow")).or_insert(50);
+  scores.entry(String::from("Blue")).or_insert(50);
+  println!("{:?}", scores);
+  ```
+
+* 根据旧值更新一个值
+
+  ```rust
+  use std::collections::HashMap;
+  let text = "hello world wonderful world";
+  let mut map = HashMap::new();
+  for word in text.split_whitespace() {
+    let count = map.entry(word).or_insert(0); //可变引用（&mut V）
+    *count += 1; // 赋值前先解引用
+  }
+  println!("{:?}", map);
+  ```
+
+#### 哈希函数
+
+`HashMap` 默认使用一种叫做 SipHash 的哈希函数，它可以抵御涉及哈希表（hash table）[1](http://127.0.0.1/trpl-zh-cn/ch08-03-hash-maps.html#siphash) 的拒绝服务（Denial of Service, DoS）攻击。然而这并不是可用的最快的算法，不过为了更高的安全性值得付出一些性能的代价。如果性能监测显示此哈希函数非常慢，以致于你无法接受，你可以指定一个不同的 *hasher* 来切换为其它函数。hasher 是一个实现了 `BuildHasher` trait 的类型。
+
+
+
+### 题目
+
+> 代码见：
+
+- 给定一系列数字，使用 vector 并返回这个列表的中位数（排列数组后位于中间的值）和众数（mode，出现次数最多的值；这里哈希 map 会很有帮助）。
+- 将字符串转换为 Pig Latin，也就是每一个单词的第一个辅音字母被移动到单词的结尾并增加 “ay”，所以 “first” 会变成 “irst-fay”。元音字母开头的单词则在结尾增加 “hay”（“apple” 会变成 “apple-hay”）。牢记 UTF-8 编码！
+- 使用哈希 map 和 vector，创建一个文本接口来允许用户向公司的部门中增加员工的名字。例如，“Add Sally to Engineering” 或 “Add Amir to Sales”。接着让用户获取一个部门的所有员工的列表，或者公司每个部门的所有员工按照字典序排列的列表。
+
+
+
+
+
+
 
 
 
