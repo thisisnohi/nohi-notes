@@ -1263,6 +1263,20 @@ map.insert(field_name, field_value);
   println!("{:?}", map);
   ```
 
+### hashmap 根据key 获取值，并更新值
+
+```rust
+let user_name = user.clone();
+dept_map
+.get_mut(&dept)
+.get_or_insert(&mut vec![])
+.push(user);
+//
+dept_map.entry(dept).or_insert(Vec::new()).push(user_name);
+```
+
+
+
 #### 哈希函数
 
 `HashMap` 默认使用一种叫做 SipHash 的哈希函数，它可以抵御涉及哈希表（hash table）[1](http://127.0.0.1/trpl-zh-cn/ch08-03-hash-maps.html#siphash) 的拒绝服务（Denial of Service, DoS）攻击。然而这并不是可用的最快的算法，不过为了更高的安全性值得付出一些性能的代价。如果性能监测显示此哈希函数非常慢，以致于你无法接受，你可以指定一个不同的 *hasher* 来切换为其它函数。hasher 是一个实现了 `BuildHasher` trait 的类型。
@@ -1277,13 +1291,1038 @@ map.insert(field_name, field_value);
 - 将字符串转换为 Pig Latin，也就是每一个单词的第一个辅音字母被移动到单词的结尾并增加 “ay”，所以 “first” 会变成 “irst-fay”。元音字母开头的单词则在结尾增加 “hay”（“apple” 会变成 “apple-hay”）。牢记 UTF-8 编码！
 - 使用哈希 map 和 vector，创建一个文本接口来允许用户向公司的部门中增加员工的名字。例如，“Add Sally to Engineering” 或 “Add Amir to Sales”。接着让用户获取一个部门的所有员工的列表，或者公司每个部门的所有员工按照字典序排列的列表。
 
+## 9 错误处理
+
+Rust 没有异常。相反，它有 `Result<T, E>` 类型，用于处理可恢复的错误，还有 `panic!` 宏，在程序遇到不可恢复的错误时停止执行。
+
+### 用 panic! 处理不可恢复的错误
+
+在实践中有两种方法造成 panic：执行会造成代码 panic 的操作（比如访问超过数组结尾的内容）或者显式调用 `panic!` 宏。这两种情况都会使程序 panic。通常情况下这些 panic 会打印出一个错误信息，展开并清理栈数据，然后退出。通过一个环境变量，你也可以让 Rust 在 panic 发生时打印调用堆栈（call stack）以便于定位 panic 的原因。
+
+* 当出现 panic 时，程序默认会开始 **展开**（*unwinding*），这意味着 Rust 会回溯栈并清理它遇到的每一个函数的数据
+
+* 另一种选择是直接 **终止**（*abort*），这会不清理数据就退出程序。
+
+  panic 时通过在 *Cargo.toml* 的 `[profile]` 部分增加 `panic = 'abort'`，可以由展开切换为终止
+
+  ```rust 
+  [profile.release]
+  panic = 'abort'
+  ```
+
+#### 使用 panic! 的 backtrace
 
 
 
+### 用 Result 处理可恢复的错误
+
+```rust
+// 读取一个不存在的文件，返回Result.Err
+let greeting_file_result = File::open("README.md");
+println!("Open README.md result is {:?}", greeting_file_result);
+let greeting_file = match greeting_file_result {
+  Ok(file) => file,
+  Err(err) => panic!("Open README.md result is {:?}", err),
+};
+println!("Open README.md greeting_file is {:?}", greeting_file);
+```
+
+#### 匹配不同的错误
+
+```rust
+let greeting_file = match greeting_file_result {
+  Ok(file) => file,
+  Err(error) => match error.kind() {
+    ErrorKind::NotFound => match File::create("hello.txt") {
+      Ok(fc) => fc,
+      Err(e) => panic!("Problem creating the file: {:?}", e),
+    },
+    other_error => {
+      panic!("Problem opening the file: {:?}", other_error);
+    }
+  },
+};
+```
+
+* 使用闭包和 `unwrap_or_else`
+
+  ```rust
+  let greeting_file = File::open("hello.txt").unwrap_or_else(|error| {
+    if error.kind() == ErrorKind::NotFound {
+      File::create("hello.txt").unwrap_or_else(|error| {
+        panic!("Problem creating the file: {:?}", error);
+      })
+    } else {
+      panic!("Problem opening the file: {:?}", error);
+    }
+  });
+  ```
+
+  
+
+#### 失败时 panic 的简写：unwrap 和 expect
+
+如果 `Result` 值是成员 `Ok`，`unwrap` 会返回 `Ok` 中的值。如果 `Result` 是成员 `Err`，`unwrap` 会为我们调用 `panic!`。
+
+* unwrap
+
+  ```rust
+  let greeting_file = File::open("hello.txt").unwrap();
+  ```
+
+  
+
+* expect
+
+  ```rust
+  let greeting_file = File::open("hello.txt")
+          .expect("hello.txt should be included in this project");
+  ```
+
+  
 
 
 
+#### 传播错误
 
+```rust
+fn read_username_from_file() -> Result<String, io::Error> {
+    let username_file_result = File::open("hello.txt");
+
+    let mut username_file = match username_file_result {
+        Ok(file) => file,
+        Err(e) => return Err(e),
+    };
+
+    let mut username = String::new();
+
+    match username_file.read_to_string(&mut username) {
+        Ok(_) => Ok(username),
+        Err(e) => Err(e),
+    }
+}
+```
+
+
+
+#### 传播错误的简写：? 运算符
+
+```rust
+// Result 值之后的 ? 被定义为与示例 9-6 中定义的处理 Result 值的 match 表达式有着完全相同的工作方式。
+// 如果 Result 的值是 Ok，这个表达式将会返回 Ok 中的值而程序将继续执行。
+// 如果值是 Err，Err 将作为整个函数的返回值，就好像使用了 return 关键字一样，这样错误值就被传播给了调用者。
+fn read_username_from_file2() -> Result<String, io::Error> {
+    let mut username_file = File::open("hello1.txt")?;
+    let mut username = String::new();
+    username_file.read_to_string(&mut username)?;
+    Ok(username)
+}
+```
+
+* `?` 运算符消除了大量样板代码并使得函数的实现更简单。我们甚至可以在 `?` 之后直接使用链式方法调用来进一步缩短代码
+
+  ```rust
+  fn read_username_from_file() -> Result<String, io::Error> {
+      let mut username = String::new();
+      File::open("hello.txt")?.read_to_string(&mut username)?;
+      Ok(username)
+  }
+  // 更简短的写法
+  fn read_username_from_file() -> Result<String, io::Error> {
+      fs::read_to_string("hello.txt")
+  }
+  ```
+
+#### 哪里可以使用 ? 运算符
+
+`?` 运算符只能被用于返回值与 `?` 作用的值相兼容的函数。
+
+```rust
+// 尝试在返回 () 的 main 函数中使用 ? 的代码不能编译
+fn main() {
+    let greeting_file = File::open("hello.txt")?;
+}
+```
+
+* `?` 运算符作用于 `File::open` 返回的 `Result` 值，不过 `main` 函数的返回类型是 `()` 而不是 `Result`。
+
+### 要不要 panic!
+
+#### 示例、代码原型和测试都非常适合 panic
+
+#### 当我们比编译器知道更多的情况
+
+#### 错误处理指导原则
+
+在当有可能会导致有害状态的情况下建议使用 `panic!` 
+
+- 有害状态是非预期的行为，与偶尔会发生的行为相对，比如用户输入了错误格式的数据。
+- 在此之后代码的运行依赖于不处于这种有害状态，而不是在每一步都检查是否有问题。
+- 没有可行的手段来将有害状态信息编码进所使用的类型中的情况。我们会在第十七章 [“将状态和行为编码为类型”](http://127.0.0.1/trpl-zh-cn/ch17-03-oo-design-patterns.html#将状态和行为编码为类型) 部分通过一个例子来说明我们的意思。
+
+#### 创建自定义类型进行有效性验证
+
+
+
+## 10 泛型、Trait 和生命周期
+
+### 泛型数据类型
+
+#### 在函数定义中使用泛型
+
+>  fn get_largest1<T: std::cmp::PartialOrd>(list: &[T]) -> &T {...}
+
+```rust
+fn main() {
+    println!("# 1.在函数定义中使用泛型");
+    let list = [1, 2, 3, 4, 5, 6];
+    let largest = get_largest(&list);
+    println!("{list:?} largest is {largest}");
+    let largest = get_largest1(&list);
+    println!("{list:?} largest is {largest}");
+
+    let list = vec!['y', 'm', 'a', 'q'];
+    let largest = get_largest1(&list);
+    println!("{list:?} largest is {largest}");
+}
+
+fn get_largest(list: &[i32]) -> i32 {
+    let mut largest = list[0];
+    for item in list {
+        if item > &largest {
+            largest = *item;
+        }
+    }
+    largest
+}
+
+// & 为借用
+fn get_largest1<T: std::cmp::PartialOrd>(list: &[T]) -> &T {
+    let mut largest = &list[0]; // 借用
+    for item in list {
+        if item > largest {
+            largest = item;
+        }
+    }
+    largest
+}
+
+```
+
+#### 结构体定义中的泛型
+
+```rust
+// 结构体中使用泛型
+#[derive(Debug)]
+struct Point<T> {
+    x: T,
+    y: T,
+}
+struct Point2<T, U> {
+    x: T,
+    y: U,
+}
+```
+
+#### 枚举定义中的泛型
+
+```rust
+// 枚举定义中的泛型
+enum Option<T> {
+    Some(T),
+    None,
+}
+enum Result<T, E> {
+    Ok(T),
+    Err(E),
+}
+```
+
+#### 方法定义中的泛型
+
+```rust
+#[derive(Debug)]
+struct Point<T> {
+    x: T,
+    y: T,
+}
+// 必须在impl后申明T
+impl<T> Point<T> {
+    fn x(&self) -> &T {
+        &self.x
+    }
+}
+```
+
+#### 泛型代码的性能
+
+泛型并不会使程序比具体类型运行得慢。
+
+Rust 通过在编译时进行泛型代码的 **单态化**（*monomorphization*）来保证效率。单态化是一个通过填充编译时使用的具体类型，将通用代码转换为特定代码的过程。
+
+### Trait：定义共同行为
+
+> *trait* 定义了某个特定类型拥有可能与其他类型共享的功能。可以通过 trait 以一种抽象的方式定义共享的行为。可以使用 *trait bounds* 指定泛型是任何拥有特定行为的类型。
+
+注意：*trait* 类似于其他语言中的常被称为 **接口**（*interfaces*）的功能，虽然有一些不同。
+
+#### 定义 trait
+
+```rust
+// 使用 trait 关键字来声明一个 trait
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+```
+
+#### 为类型实现 trait
+
+```rust
+use r#trait::{Summary, Tweet};
+
+fn main() {
+    println!("Trait：定义共同行为");
+
+    let tweet = Tweet {
+        username: "NOHI".to_string(),
+        content: "of course, as you probably already know, people".to_string(),
+        reply: false,
+        retweet: false,
+    };
+    println!("1 new tweet: {}", tweet.summarize());
+}
+```
+
+* 只有在 trait 或类型至少有一个属于当前 crate 时，我们才能对类型实现该 trait。
+
+#### 默认实现
+
+```rust
+pub trait Summary {
+    fn summarize(&self) -> String {
+        String::from("(Read more...)")
+    }
+}
+
+pub trait Summary {
+    fn summarize_author(&self) -> String;
+    fn summarize(&self) -> String {
+        format!("(Read more from {}...)", self.summarize_author())
+    }
+}
+```
+
+
+
+#### trait 作为参数
+
+```rust
+notify(&tweet);
+notify(&article);
+...
+pub fn notify(item: &impl Summary) {
+    println!("Breaking news! {}", item.summarize());
+}
+```
+
+#### Trait Bound 语法
+
+```rust
+pub fn notify<T: Summary>(item: &T) {
+    println!("Breaking news! {}", item.summarize());
+}
+// 获取两个实现了Summary的参数方法，item1 item2 可以为不同类型
+pub fn notify(item1: &impl Summary, item2: &impl Summary) {...}
+// 强制item1 item2为相同类型
+pub fn notify<T: Summary>(item1: &T, item2: &T) {
+ 
+// 通过 + 指定多个 trait bound
+pub fn notify(item: &(impl Summary + Display))
+pub fn notify<T: Summary + Display>(item: &T) 
+
+// 通过 where 简化 trait bound
+// 在函数签名之后的 where 从句中指定 trait bound 的语法。
+fn some_function<T: Display + Clone, U: Clone + Debug>(t: &T, u: &U) -> i32 {..}
+// 使用 where 从句
+fn some_function<T, U>(t: &T, u: &U) -> i32
+where
+    T: Display + Clone,
+    U: Clone + Debug,
+{...}  
+```
+
+#### 返回实现了 trait 的类型
+
+```rust
+fn returns_summarizable() -> impl Summary {
+    Tweet {
+        username: String::from("horse_ebooks"),
+        content: String::from(
+            "of course, as you probably already know, people",
+        ),
+        reply: false,
+        retweet: false,
+    }
+}
+```
+
+#### 使用 trait bound 有条件地实现方法
+
+```rust
+```
+
+
+
+### 使用生命周期来确保引用有效
+
+```rust
+fn longest<'a>(p0: &'a str, p1: &'a str) -> &'a str {
+    if (p0.len() > p1.len()) {
+        return p0;
+    } else {
+        return p1;
+    }
+}
+```
+
+
+
+### 生命周期省略（Lifetime Elision）
+
+函数或方法的参数的生命周期被称为 **输入生命周期**（*input lifetimes*），而返回值的生命周期被称为 **输出生命周期**（*output lifetimes*）。
+
+编译器采用三条规则来判断引用何时不需要明确的注解。
+
+* 第一条规则适用于输入生命周期，后两条规则适用于输出生命周期。如果编译器检查完这三条规则后仍然存在没有计算出生命周期的引用，编译器将会停止并生成错误。这些规则适用于 `fn` 定义，以及 `impl` 块。
+* 第一条规则是编译器为每一个引用参数都分配一个生命周期参数。换句话说就是，函数有一个引用参数的就有一个生命周期参数：`fn foo<'a>(x: &'a i32)`，有两个引用参数的函数就有两个不同的生命周期参数，`fn foo<'a, 'b>(x: &'a i32, y: &'b i32)`，依此类推。
+
+* 第二条规则是如果只有一个输入生命周期参数，那么它被赋予所有输出生命周期参数：`fn foo<'a>(x: &'a i32) -> &'a i32`。
+
+* 第三条规则是如果方法有多个输入生命周期参数并且其中一个参数是 `&self` 或 `&mut self`，说明是个对象的方法 (method)(译者注：这里涉及 rust 的面向对象参见 17 章)，那么所有输出生命周期参数被赋予 `self` 的生命周期。第三条规则使得方法更容易读写，因为只需更少的符号。
+
+## 11 编写自动化测试
+
+### 如何编写测试
+
+1. 设置任何所需的数据或状态
+2. 运行需要测试的代码
+3. 断言其结果是我们所期望的
+
+#### 测试函数剖析
+
+Rust 中的测试就是一个带有 `test` 属性注解的函数。为了将一个函数变成测试函数，需要在 `fn` 行之前加上 `#[test]`。当使用 `cargo test` 命令运行测试时，Rust 会构建一个测试执行程序用来调用被标注的函数，并报告每一个测试是通过还是失败。
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn it_works() {
+        let result = add(2, 2);
+        assert_eq!(result, 4);
+    }
+}
+```
+
+* 运行`cargo test`执行测试检查
+
+#### 使用 assert! 宏来检查结果
+
+```rust
+assert!(rect1.can_hold(&rect2), "rect1 can't hold rect2")
+assert_eq!(2 + 2, 4);
+```
+
+#### 使用 assert_eq! 和 assert_ne! 宏来测试相等
+
+`assert_eq!` 和 `assert_ne!`。这两个宏分别比较两个值是相等还是不相等
+
+`assert_eq!` 和 `assert_ne!` 宏在底层分别使用了 `==` 和 `!=`。当断言失败时，这些宏会使用调试格式打印出其参数，这意味着被比较的值必需实现了 `PartialEq` 和 `Debug` trait。
+
+所有的基本类型和大部分标准库类型都实现了这些 trait。对于自定义的结构体和枚举，需要实现 `PartialEq` 才能断言它们的值是否相等。
+
+#### 使用 should_panic 检查 panic
+
+```rust
+pub struct Guess {
+    value: i32,
+}
+impl Guess {
+    pub fn new(value: i32) -> Guess {
+        if value < 1 || value > 100 {
+            panic!("Guess value 必须在1-100之间!")
+        }
+        Guess { value }
+    }
+}
+
+#[test]
+#[should_panic]
+fn test_guess() {
+  Guess::new(200);
+}
+```
+
+
+
+#### 将 Result<T, E> 用于测试
+
+```rust
+#[test]
+fn it_works_result() -> Result<(), String> {
+  if 2 + 2 == 4 {
+    Ok(())
+  } else {
+    Err(String::from("two plus two does not equal four"))
+  }
+}
+```
+
+### 控制测试如何运行
+
+运行 `cargo test --help` 会提示 `cargo test` 的有关参数，而运行 `cargo test -- --help` 可以提示在分隔符之后使用的有关参数。
+
+#### 并行或连续的运行测试
+
+* Rust 默认使用线程来并行运行
+* 确保测试不能相互依赖，或依赖任何共享的状态，包括依赖共享的环境，比如当前工作目录或者环境变量。
+
+```rust
+# 将测试线程设置为 1
+cargo test -- --test-threads=1 
+```
+
+#### 显示函数输出
+
+默认情况下，当测试通过时，Rust 的测试库会截获打印到标准输出的所有内容。比如在测试中调用了 `println!` 而测试通过了，我们将不会在终端看到 `println!` 的输出：只会看到说明测试通过的提示行。如果测试失败了，则会看到所有标准输出和其他错误信息。
+
+结尾加上 `--show-output` 告诉 Rust 显示成功测试的输出。
+
+```rust
+cargo test -- --show-output
+```
+
+#### 通过指定名字来运行部分测试
+
+* `cargo test it_works` 运行名称包含it_works的测试方法
+
+#### 忽略某些测试
+
+使用 `ignore` 属性来标记耗时的测试并排除它们
+
+```rust
+#[test]
+#[ignore]
+fn it_works_result() -> Result<(), String> {
+  if 2 + 2 == 4 {
+    Ok(())
+  } else {
+    Err(String::from("two plus two does not equal four"))
+  }
+}
+```
+
+* `cargo test -- --ignored`  运行 `ignored` 的测试时
+* `cargo test -- --include-ignored` 运行全部测试
+
+### 测试的组织结构
+
+分类：**单元测试**（*unit tests*）与 **集成测试（*integration tests*）**
+
+单元测试倾向于更小而更集中，在隔离的环境中一次测试一个模块，或者是测试私有接口。而集成测试对于你的库来说则完全是外部的。
+
+#### 单元测试
+
+单元测试的目的是在与其他部分隔离的环境中测试每一个单元的代码，以便于快速而准确地验证某个单元的代码功能是否符合预期。单元测试与它们要测试的代码共同存放在位于 *src* 目录下相同的文件中。规范是在每个文件中创建包含测试函数的 `tests` 模块，并使用 `cfg(test)` 标注模块。
+
+* 测试模块和 `#[cfg(test)]`
+
+#### 集成测试
+
+* tests 目录
+
+```rust
+use adder;
+
+#[test]
+fn it_adds_two() {
+    assert_eq!(4, adder::add_two(2));
+}
+```
+
+* 文件顶部添加 `use adder`
+* 完整测试：单元测试、集成测试和文档测试
+* 注意如果一个部分的任何测试失败，之后的部分都不会运行
+
+可以通过指定测试函数的名称作为 `cargo test` 的参数来运行特定集成测试。也可以使用 `cargo test` 的 `--test` 后跟文件的名称来运行某个特定集成测试文件中的所有测试：
+
+```rust
+cargo test --test integration_test
+```
+
+
+
+## 12 一个 I/O 项目：构建一个命令行程序
+
+### 接受命令行参数
+
+```rust
+cargo run -- searchstring example-filename.txt
+```
+
+#### 读取参数值
+
+Rust 标准库提供的函数 `std::env::args`
+
+```rust
+// 文件:src/main.rs
+use std::env;
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    dbg!(args);
+}
+
+// 运行
+cargo run -- searchstring example-filename.txt 中国
+// 结果
+[minigrep/src/main.rs:7] args = [
+    "/Users/nohi/work/workspaces-nohi/rust/rust_start/_12_io/target/debug/minigrep",
+    "searchstring",
+    "example-filename.txt",
+    "中国",
+]
+```
+
+:warning: 注意 `std::env::args` 在其任何参数包含无效 Unicode 字符时会 panic。如果你需要接受包含无效 Unicode 字符的参数，使用 `std::env::args_os` 代替
+
+* 第一个值为“...target/debug/minigrep”
+
+#### 将参数值保存进变量
+
+```rust
+let args: Vec<String> = env::args().collect();
+dbg!(&args);
+if &args.len() < &3 {
+  println!("请输入参数1.查询字符串 2.文件名");
+  exit(1);
+}
+let query = &args[1];
+let file_path = &args[2];
+println!("query[{query}] from {file_path}");
+```
+
+
+
+### 读取文件
+
+```rust
+let content = fs::read_to_string(file_path).expect("Should have been able to read the file.");
+```
+
+* `fs::read_to_string` 接受 `file_path`，打开文件，接着返回包含其内容的 `std::io::Result<String>`。
+
+
+
+** 最终代码**
+
+```rust
+// 1. 接收命令行参数
+let args: Vec<String> = env::args().collect();
+dbg!(&args);
+if &args.len() < &3 {
+  println!("请输入参数1.查询字符串 2.文件名");
+  exit(1);
+}
+// 2.存储参数
+let query = &args[1];
+let file_path = &args[2];
+println!("query[{query}] from {file_path}");
+
+// 3.读取文件
+let content = fs::read_to_string(file_path).expect("Should have been able to read the file.");
+println!("file[{file_path}]:\n======================================\n{content}\n======================================");
+```
+
+
+
+### 重构
+
+> 代码见： [github](https://github.com/thisisnohi/rust_start)  程序：_12_io/minigrep
+
+#### 二进制项目的关注分离
+
+* 原则
+
+  - 将程序拆分成 *main.rs* 和 *lib.rs* 并将程序的逻辑放入 *lib.rs* 中。
+
+  - 当命令行解析逻辑比较小时，可以保留在 *main.rs* 中。
+
+  - 当命令行解析开始变得复杂时，也同样将其从 *main.rs* 提取到 *lib.rs* 中。
+
+* 结果：保留在 `main` 函数中的责任应该被限制为
+
+  - 使用参数值调用命令行解析逻辑
+
+  - 设置任何其他的配置
+
+  - 调用 *lib.rs* 中的 `run` 函数
+
+  - 如果 `run` 返回错误，则处理这个错误
+
+* *main.rs* 处理程序运行，而 *lib.rs* 处理所有的真正的任务逻辑。
+
+  因为不能直接测试 `main` 函数，这个结构通过将所有的程序逻辑移动到 *lib.rs* 的函数中使得我们可以测试它们。
+
+#### 提取参数解析器
+
+```rust
+fn main(){
+		// 解析参数
+    let args: Vec<String> = env::args().collect();
+    let (query, file_path) = parse_config(&args);
+    println!("query[{query}] from {file_path}");
+}
+// 解析参数
+fn parse_config(args: &[String]) -> (&str, &str) {
+    dbg!(&args);
+    if &args.len() < &3 {
+        println!("请输入参数1.查询字符串 2.文件名");
+        exit(1);
+    }
+    (&args[1], &args[2])
+}
+```
+
+#### 组合配置值
+
+```rust
+#[derive(Debug)]
+struct Config {
+    query: String,
+    file_path: String,
+}
+fn parse_config(args: &[String]) -> Config {
+    dbg!(&args);
+    if &args.len() < &3 {
+        println!("请输入参数1.查询字符串 2.文件名");
+        exit(1);
+    }
+    // args 为借用
+    // Config定义为拥有所有权的String
+    // 用最简单的clone方法，牺牲一小部分性能换取简洁性
+    Config {
+        query: args[1].clone(),
+        file_path: args[2].clone(),
+    }
+}
+```
+
+#### 创建一个 Config 的构造函数
+
+```rust
+let args: Vec<String> = env::args().collect();
+let config = Config::new(&args);
+...
+impl Config {
+    // 构造函数
+    fn new(args: &[String]) -> Config {
+        dbg!(&args);
+        if &args.len() < &3 {
+            println!("请输入参数1.查询字符串 2.文件名");
+            exit(1);
+        }
+        // args 为借用
+        // Config定义为拥有所有权的String
+        // 用最简单的clone方法，牺牲一小部分性能换取简洁性
+        Config {
+            query: args[1].clone(),
+            file_path: args[2].clone(),
+        }
+    }
+}
+```
+
+#### 修复错误处理
+
+```rust
+let config = Config::build(&args).unwrap_or_else(|err| {
+  println!("Problem parsing arguments:{err}");
+  process::exit(1);
+});
+
+fn build(args: &[String]) -> Result<Config, &'static str> {
+   dbg!(&args);
+   if args.len() < 3 {
+     println!("请输入参数1.查询字符串 2.文件名");
+     return Result::Err("请输入参数1.查询字符串 2.文件名");
+   }
+   return Result::Ok(Config {
+     query: args[1].clone(),
+     file_path: args[2].clone(),
+   });
+}
+```
+
+
+
+#### 从 main 提取逻辑
+
+```rust
+// 1.返回类型变为 Result<(), Box<dyn Error>>
+// 2.Box<dyn Error> 意味着函数会返回实现了 Error trait 的类型，不过无需指定具体将会返回的值的类型
+//   dyn，它是 “动态的”（“dynamic”）的缩写
+// 3.去掉了 expect 调用并替换为 第九章 讲到的 ?
+// 4.成功时这个函数会返回一个 Ok 值
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    let content = fs::read_to_string(&config.file_path)?;
+    println!("file[{}]:\n======================================\n{content}\n======================================", config.file_path);
+
+    // 返回
+    Ok(())
+}
+
+// main方法调用
+// 2. 读取文件
+// run(&config).unwrap_or_else(|err| {
+//     println!("程序异常:{err}");
+//     process::exit(1);
+// });
+// 使用if let
+if let Err(e) = run(&config) {
+  println!("程序异常:{e}");
+  process::exit(1);
+}
+```
+
+以上代码见： [github](https://github.com/thisisnohi/rust_start)  程序：_12_io/minigrep
+
+
+
+##### 将代码拆分到库 crate
+
+> 代码见： [github](https://github.com/thisisnohi/rust_start)  程序：_12_io/minigrep2
+
+* `main.rs`
+
+  ```rust
+  use std::{env, process};
+  
+  fn main() {
+      println!("一个 I/O 项目：构建一个命令行程序");
+  
+      // 1. 解析参数
+      let args: Vec<String> = env::args().collect();
+      let config = minigrep2::Config::build(&args).unwrap_or_else(|err| {
+          println!("Problem parsing arguments:{err}");
+          process::exit(1);
+      });
+  
+      // 2. 读取文件
+      // 使用if let
+      if let Err(e) = minigrep2::run(&config) {
+          println!("程序异常:{e}");
+          process::exit(1);
+      }
+  }
+  
+  ```
+
+* `lib.rs`
+
+  **使用了公有的 `pub` 关键字**
+
+  ```rust
+  use std::error::Error;
+  use std::fs;
+  
+  #[derive(Debug)]
+  pub struct Config {
+     ...
+  }
+  impl Config {
+      // build 返回Result
+      pub fn build(args: &[String]) -> Result<Config, &'static str> {
+          ...
+      }
+  }
+  // 处理逻辑
+  pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
+    ...
+  }
+  
+  ```
+
+### 采用测试驱动开发完善库的功能
+
+* TDD
+
+  1. 编写一个失败的测试，并运行它以确保它失败的原因是你所期望的。
+
+  1. 编写或修改足够的代码来使新的测试通过。
+
+  1. 重构刚刚增加或修改的代码，并确保测试仍然能通过。
+
+  1. 从步骤 1 开始重复！
+
+
+
+#### 编写一个失败的测试
+
+```rust
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    vec![]
+}
+#[cfg(test)]
+mod test {
+    use crate::search;
+
+    #[test]
+    fn on_result() {
+        let query = "duct";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three.";
+        assert_eq!(vec!["safe, fast, productive."], search(query, contents));
+    }
+}
+```
+
+#### 编写使测试通过的代码
+
+```rust
+// 遍历内容的每一行文本。
+// 查看这一行是否包含要搜索的字符串。
+// 如果有，将这一行加入列表返回值中。
+// 如果没有，什么也不做。
+// 返回匹配到的结果列表
+pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect()
+}
+```
+
+* 在 run 函数中使用 search 函数
+
+  ```rust
+  pub fn run(config: &Config) -> Result<(), Box<dyn Error>> {
+      let content = fs::read_to_string(&config.file_path)?;  
+      for line in search(&config.query, &content) {
+          println!("{line}")
+      }
+      // 返回
+      Ok(())
+  }
+  ```
+
+* 运行程序
+
+  ```rust
+  // 单行结果
+  cargo run -- frog poem.txt 
+  // 多行结果
+  cargo run -- body poem.txt
+  // 没结果
+  cargo run -- monomorphization poem.txt
+  ```
+
+  
+
+### 处理环境变量
+
+#### 编写一个大小写不敏感 search 函数的失败测试
+
+```rust
+/*
+     大小写不敏感测试
+    */
+    #[test]
+    fn case_insensitive() {
+        let query = "rUsT";
+        let contents = "\
+Rust:
+safe, fast, productive.
+Pick three.
+Trust me.";
+        assert_eq!(
+            vec!["Rust:", "Trust me."],
+            search_case_insensitive(query, contents)
+        );
+    }
+
+// 错误函数
+fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+  vec![]
+}
+```
+
+#### 函数补充全
+
+```rust
+// 大小写不敏感
+fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    contents
+        .lines()
+        .filter(|line| line.to_uppercase().contains(query.to_uppercase().as_str()))
+        .collect()
+}
+```
+
+#### 环境变量处理
+
+```rust
+// 从环境变量获取参数
+let ignore_case = env::var("IGNORE_CASE").is_ok();
+```
+
+* `IGNORE_CASE=1 cargo run TO poem.txt`
+
+
+
+### 将错误信息输出到标准错误而不是标准输出
+
+**标准输出**（*standard output*，`stdout`）对应一般信息，**标准错误**（*standard error*，`stderr`）则用于错误信息
+
+#### 将错误打印到标准错误
+
+```rust
+fn main() {
+    // 1. 解析参数
+    let args: Vec<String> = env::args().collect();
+    let config = minigrep2::Config::build(&args).unwrap_or_else(|err| {
+        // 标准错误输出
+        eprintln!("解析参数错误: {err}");
+        process::exit(1);
+    });
+
+    // 2. 读取文件
+    if let Err(e) = minigrep2::run(&config) {
+        // 标准错误输出
+        eprintln!("程序运行错误: {e}");
+        process::exit(1);
+    }
+}
+```
+
+* 运行`cargo run > output.txt`
+
+  ```shell
+  Problem parsing arguments: not enough arguments
+  ```
+
+* `cargo run -- to poem.txt > output.txt`
+
+  终端看不到输出，output.txt内容如下：
+
+  ```text
+  Are you nobody, too?
+  How dreary to be somebody!
+  ```
+
+  
 
 
 
