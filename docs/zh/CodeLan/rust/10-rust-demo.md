@@ -9,6 +9,8 @@
 > Rust 程序设计语言 简体中文版：https://kaisery.github.io/trpl-zh-cn/
 >
 > 跟大佬学习RUST：视频：https://www.bilibili.com/video/BV1RZ4y1a7iF/?spm_id_from=333.788.recommend_more_video.9
+>
+> 个人demo: https://github.com/thisisnohi/rust_start.git
 
 ## 一、常用概念
 
@@ -2323,6 +2325,1679 @@ fn main() {
   ```
 
   
+
+## 13 中的函数式语言功能：迭代器与闭包
+
+涉及内容
+
+- **闭包**（*Closures*），一个可以储存在变量里的类似函数的结构
+- **迭代器**（*Iterators*），一种处理元素序列的方式
+- 如何使用闭包和迭代器来改进第十二章的 I/O 项目。
+- 闭包和迭代器的性能。（**剧透警告：** 它们的速度超乎你的想象！）
+
+ ### 闭包：可以捕获环境的匿名函数
+
+Rust 的 **闭包**（*closures*）是可以保存在一个变量中或作为参数传递给其他函数的匿名函数
+
+#### 闭包会捕获其环境
+
+```rust
+impl Inventory {
+    // 获取颜色
+    fn giveaway(&self, user_preference: Option<ShirtColor>) -> ShirtColor {
+        user_preference.unwrap_or_else(|| self.most_stocked())
+    }
+    // 获取库存最多的颜色
+    fn most_stocked(&self) -> ShirtColor {
+        let mut red_count = 0;
+        let mut blue_count = 0;
+
+        for item in &self.shirts {
+            match item {
+                ShirtColor::Red => red_count += 1,
+                ShirtColor::Blue => blue_count += 1,
+            }
+        }
+
+        if red_count > blue_count {
+            return ShirtColor::Red;
+        } else {
+            return ShirtColor::Blue;
+        }
+    }
+}
+```
+
+传递了一个会在当前 `Inventory` 实例上调用 `self.most_stocked()` 的闭包。标准库并不需要知道我们定义的 `Inventory` 或 `ShirtColor` 类型或是在这个场景下我们想要用的逻辑。闭包捕获了一个 `Inventory` 实例的不可变引用到 `self`，并连同其它代码传递给 `unwrap_or_else` 方法。相比之下，函数就不能以这种方式捕获其环境。
+
+#### 闭包类型推断和注解
+
+* 函数中需要类型注解是因为它们是暴露给用户的显式接口的一部分。严格定义这些接口对保证所有人都对函数使用和返回值的类型理解一致是很重要的。
+* 闭包并不用于这样暴露在外的接口：它们储存在变量中并被使用，不用命名它们或暴露给库的用户调用。
+
+```rust
+let expensive_closure = |num: u32| -> u32 {
+  println!("calculating slowly...");
+  thread::sleep(Duration::from_secs(2));
+  num
+};
+let rs = expensive_closure(12);
+println!("12 expensive_closure is {rs}");
+```
+
+* 定义了一个闭包并将它保存在变量中
+* 闭包使用了类型注解
+
+有了类型注解闭包的语法就更类似函数了
+
+```rust
+fn  add_one_v1   (x: u32) -> u32 { x + 1 }
+let add_one_v2 = |x: u32| -> u32 { x + 1 };
+let add_one_v3 = |x|             { x + 1 };
+let add_one_v4 = |x|               x + 1  ;
+```
+
+* 第一行展示了一个函数定义
+* 第二行展示了一个完整标注的闭包定义
+* 第三行闭包定义中省略了类型注解
+* 而第四行去掉了可选的大括号，因为闭包体只有一个表达式。
+
+#### 捕获引用或者移动所有权
+
+闭包可以通过三种方式捕获其环境，它们直接对应到函数获取参数的三种方式：不可变借用，可变借用和获取所有权。闭包会根据函数体中如何使用被捕获的值决定用哪种方式捕获。
+
+```rust
+let mut list = vec![1, 2, 3];
+println!("Before defining closure: {:?}", list);
+
+let mut borrows_mutably = || list.push(7);
+// 这里不能打印，因为borrows_mutably闭包已经借用了list
+// 只能borrows_mutably调用结束后，list被借用结束
+// 才能存在其他的list借用（println! 也是使用的list借用）
+// 注：可变借用存在时不允许有其他借用
+// println!("list is {:?}", list);
+borrows_mutably();
+println!("After calling closure: {:?}", list);
+```
+
+
+
+闭包体不严格需要所有权，如果希望强制闭包获取它用到的环境中值的所有权，可以在参数列表前使用 `move` 关键字。
+
+```rust
+let list = vec![1, 2, 3];
+    println!("Before defining closure: {:?}", list);
+
+    thread::spawn(move || println!("From thread: {:?}", list))
+        .join()
+        .unwrap();
+}
+```
+
+* 闭包定义前写上 `move` 关键字来指明 `list` 应当被移动到闭包中
+* 防止线程维护了 `list` 的所有权但却在新线程之前结束并且丢弃了 `list`，则在线程中的不可变引用将失效
+
+#### 将被捕获的值移出闭包和 Fn trait
+
+1. `FnOnce` 适用于能被调用一次的闭包，所有闭包都至少实现了这个 trait，因为所有闭包都能被调用。一个会将捕获的值移出闭包体的闭包只实现 `FnOnce` trait，这是因为它只能被调用一次。
+2. `FnMut` 适用于不会将捕获的值移出闭包体的闭包，但它可能会修改被捕获的值。这类闭包可以被调用多次。
+3. `Fn` 适用于既不将被捕获的值移出闭包体也不修改被捕获的值的闭包，当然也包括不从环境中捕获值的闭包。这类闭包可以被调用多次而不改变它们的环境，这在会多次并发调用闭包的场景中十分重要。
+
+
+
+### 使用迭代器处理元素序列
+
+```rust
+#[test]
+fn iterator_demonstration() {
+  let v1 = vec![1, 2, 3];
+  let mut v1_iter = v1.iter();
+
+  assert_eq!(v1_iter.next(), Some(&1));
+  assert_eq!(v1_iter.next(), Some(&2));
+  assert_eq!(v1_iter.next(), Some(&3));
+  assert_eq!(v1_iter.next(), None);
+}
+```
+
+* 注意 `v1_iter` 需要是可变的
+* 从 `next` 调用中得到的值是 vector 的不可变引用
+* 获取 `v1` 所有权并返回拥有所有权的迭代器，则可以调用 `into_iter`
+* 获取迭代可变引用，则可以调用 `iter_mut`
+
+#### 消费迭代器的方法
+
+```rust
+#[test]
+fn iterator_sum() {
+  let v1 = vec![1, 2, 3];
+  let v1_iter = v1.iter();
+  let total: i32 = v1_iter.sum();
+  assert_eq!(total, 6);
+}
+```
+
+调用 `sum` 之后不再允许使用 `v1_iter` 因为调用 `sum` 时它会获取迭代器的所有权
+
+
+
+```rust
+// 获取query
+let query = match args.next() {
+  Some(t) => t,
+  None => return Err("请输入参数1.查询字符串 2.文件名"),
+};
+```
+
+
+
+## 14 Cargo
+
+### 采用发布配置自定义构建
+
+Cargo 有两个主要的配置：运行 `cargo build` 时采用的 `dev` 配置和运行 `cargo build --release` 的 `release` 配置。`dev` 配置为开发定义了良好的默认配置，`release` 配置则为发布构建定义了良好的默认配置。
+
+```shell
+$ cargo build
+$ cargo build --release
+```
+
+* Cargo.toml
+
+  ```rust
+  [profile.dev]
+  opt-level = 0
+  
+  [profile.release]
+  opt-level = 3
+  ```
+
+  * `opt-level` 设置控制 Rust 会对代码进行何种程度的优化。这个配置的值从 0 到 3。
+
+### 将 crate 发布到 Crates.io
+
+#### 编写有用的文档注释
+
+```rust
+/// Adds one to the number given.
+///
+/// # Examples
+///
+/// ```
+/// let arg = 5;
+/// let answer = my_crate::add_one(arg);
+///
+/// assert_eq!(6, answer);
+/// ```
+pub fn add_one(x: i32) -> i32 {
+    x + 1
+}
+```
+
+
+
+```rust
+// cargo doc 来生成这个文档注释的 HTML 文档
+cargo doc
+// 构建当前 crate 文档的 HTML 并在浏览器中打开
+cargo doc --open 
+```
+
+* 注释包含项的结构
+
+  文档注释风格 `//!` 为包含注释的项，而不是位于注释之后的项增加文档
+
+  ```rust
+  //! # My Crate
+  //!
+  //! `my_crate` is a collection of utilities to make performing certain
+  //! calculations more convenient.
+  
+  /// Adds one to the number given.
+  // --snip--
+  ```
+
+* 使用 pub use 导出合适的公有 API
+
+  使用 `pub use` 重导出（re-export）项来使公有结构不同于私有结构
+
+```rust
+//! # Art
+//!
+//! A library for modeling artistic concepts.
+
+pub use self::kinds::PrimaryColor;
+pub use self::kinds::SecondaryColor;
+pub use self::utils::mix;
+
+pub mod kinds {
+    // --snip--
+}
+
+pub mod utils {
+    // --snip--
+}
+```
+
+* 向新 crate 添加元信息
+
+  ```rust
+  [package]
+  name = "art"
+  version = "0.1.0"
+  edition = "2021"
+  description = "A fun game where you guess what number the computer has chosen."
+  license = "MIT"
+  
+  # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+  
+  [dependencies]
+  ```
+
+* 发布到 Crates.io
+
+  ```shelll
+  cargo publish
+  ```
+
+* 使用 cargo yank 从 Crates.io 弃用版本
+
+  ```shell
+  cargo yank --vers 1.0.1
+  ```
+
+### Cargo 工作空间-workspace
+
+> 一个二进制项目和两个库。二进制项目会提供主要功能，并会依赖另两个库。
+>
+> art: 二进制
+>
+> cargo、add_one 库
+
+```shell
+# 创建库项目
+cargo new add_one --lib
+# 创建二进制项目
+cargo new add_one 
+```
+
+
+
+* 顶级 *Cargo.toml* 
+
+  ```tom
+  [workspace]
+  
+  members = [
+      "art",
+      "cargo",   
+      "add_one",
+  ]
+  ```
+
+* `art/Cargo.toml`
+
+  dependencies 依赖的库
+
+  ```toml
+  [dependencies]
+  # 依赖本工作空间的库
+  add_one = { path = "../add_one" }
+  # 
+  ```
+
+  
+
+* 测试: `-p` 参数并指定希望测试的 crate 名称
+
+  ```shell
+  cargo test -p add_one
+  ```
+
+  
+
+## 15 智能指针
+
+**指针** （*pointer*）是一个包含内存地址的变量的通用概念。这个地址引用，或 “指向”（points at）一些其他数据。Rust 中最常见的指针是第四章介绍的 **引用**（*reference*）。引用以 `&` 符号为标志并借用了它们所指向的值。除了引用数据没有任何其他特殊功能，也没有额外开销。
+
+**智能指针**（*smart pointers*）是一类数据结构，它们的表现类似指针，但是也拥有额外的元数据和功能。
+
+* **引用计数** （*reference counting*）智能指针类型。这种指针允许数据有多个所有者，它会记录所有者的数量，当没有所有者时清理数据。
+* 普通引用和智能指针的一个额外的区别是引用是一类只借用数据的指针；相反，在大部分情况下，智能指针 **拥有** 它们指向的数据。
+* 智能指针通常使用结构体实现
+
+**常用**
+
+- `Box<T>`，用于在堆上分配值
+- `Rc<T>`，一个引用计数类型，其数据可以有多个所有者
+- `Ref<T>` 和 `RefMut<T>`，通过 `RefCell<T>` 访问。（ `RefCell<T>` 是一个在运行时而不是在编译时执行借用规则的类型）。
+
+
+
+### 使用Box<T>指向堆上的数据
+
+最简单直接的智能指针是 *box*，其类型是 `Box<T>`。box 允许你将一个值放在堆上而不是栈上。留在栈上的则是指向堆数据的指针
+
+* 使用场景：
+  * 当有一个在编译时未知大小的类型，而又想要在需要确切大小的上下文中使用这个类型值的时候
+  * 当有大量数据并希望在确保数据不被拷贝的情况下转移所有权的时候
+  * 当希望拥有一个值并只关心它的类型是否实现了特定 trait 而不是其具体类型的时候
+
+#### Box 允许创建递归类型
+
+```rust
+enum List {
+    Cons(i32, Box<List>),
+    Nil,
+}
+
+use crate::List::{Cons, Nil};
+
+fn main() {
+    let list = Cons(1, Box::new(Cons(2, Box::new(Cons(3, Box::new(Nil))))));
+}
+```
+
+
+
+### 通过 Deref trait 将智能指针当作常规引用处理
+
+实现 `Deref` trait 允许我们重载 **解引用运算符**（*dereference operator*）`*`（不要与乘法运算符或通配符相混淆）。通过这种方式实现 `Deref` trait 的智能指针可以被当作常规引用来对待，可以编写操作引用的代码并用于智能指针。
+
+* 追踪指针的值
+
+  ```rust
+  let x = 5;
+  let y = &x; // y 等于 x 的一个引用
+  assert_eq!(5, x);
+  assert_eq!(5, *y);
+  assert_eq!(x, *y);
+  // 不能比较5 与 y,因为为y为引用，需要*y 解引用后获取值比较
+  //assert_eq!(5, y);
+  ```
+
+* 像引用一样使用 Box<T>
+
+  ```rust
+  let x = 5;
+  let y = Box::new(x);
+  
+  assert_eq!(5, x);
+  assert_eq!(5, *y);
+  ```
+
+#### 自定义智能指针
+
+```rust
+struct MyBox<T>(T);
+
+impl<T> MyBox<T> {
+    fn new(t: T) -> MyBox<T> {
+        MyBox(t)
+    }
+}
+// 实例解引用
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+```
+
+* `*y` 时,底层`*(y.deref())`
+
+#### 函数和方法的隐式 Deref 强制转换
+
+**Deref 强制转换**（*deref coercions*）将实现了 `Deref` trait 的类型的引用转换为另一种类型的引用
+
+```rust
+  let m = MyBox::new(String::from("Rust"));
+    hello(&m);
+    let m = MyBox::new("Rust");
+    hello(&m);
+}
+
+fn hello(name: &str) {
+    println!("Hello, {name}!");
+}
+```
+
+
+
+#### Deref 强制转换如何与可变性交互
+
+Rust 在发现类型和 trait 实现满足三种情况时会进行 Deref 强制转换：
+
+- 当 `T: Deref<Target=U>` 时从 `&T` 到 `&U`。
+- 当 `T: DerefMut<Target=U>` 时从 `&mut T` 到 `&mut U`。
+- 当 `T: Deref<Target=U>` 时从 `&mut T` 到 `&U`。
+
+### 使用 Drop Trait 运行清理代码
+
+```rust
+	#[derive(Debug)]
+struct CustomerSmartPointer {
+    data: String,
+}
+impl Drop for CustomerSmartPointer {
+    fn drop(&mut self) {
+        println!("CustomerSmartPointer...drop {}", self.data);
+    }
+}
+
+main:
+println!("\n使用 Drop Trait 运行清理代码");
+let a = CustomerSmartPointer {
+  data: "aaaa".to_string(),
+};
+CustomerSmartPointer {
+  data: "bbb".to_string(),
+};
+let c = CustomerSmartPointer {
+  data: String::from("cccc stuff"),
+};
+let d = CustomerSmartPointer {
+  data: String::from("dddd stuff"),
+};	
+
+println!("a is {:?}", a);
+```
+
+* 结果
+
+  ```shell
+  使用 Drop Trait 运行清理代码
+  CustomerSmartPointer...drop bbb
+  a is CustomerSmartPointer { data: "aaaa" }
+  CustomerSmartPointer...drop dddd stuff
+  CustomerSmartPointer...drop cccc stuff
+  CustomerSmartPointer...drop aaaa
+  ```
+
+  * bbb没有引用，直接回收
+  * 变量以被创建时相反的顺序被丢弃，所以 `d` 在 `c` 之前被丢弃。
+
+* 通过 std::mem::drop 提早丢弃值
+
+  ```rust
+  let c = CustomSmartPointer {
+    data: String::from("some data"),
+  };
+  println!("CustomSmartPointer created.");
+  drop(c);
+  ```
+
+
+
+### Rc<T> 引用计数智能指针
+
+`Rc<T>`，其为 **引用计数**（*reference counting*）的缩写。
+
+```rust
+#[derive(Debug)]
+enum List2 {
+    Cons2(i32, Rc<crate::List2>),
+    Nil,
+}
+impl List2 {}
+
+let a = Rc::new(Cons2(5, Rc::new(Cons2(10, Rc::new(List2::Nil)))));
+let b = Cons2(3, Rc::clone(&a));
+let c = Cons2(4, Rc::clone(&a));
+```
+
+* 调用 `Rc::clone` 函数并传递 `a` 中 `Rc<List>` 的引用作为参数。
+
+* 也可以调用 `a.clone()`
+
+  `Rc::clone` 的实现并不像大部分类型的 `clone` 实现那样对所有数据进行深拷贝。`Rc::clone` 只会增加引用计数，这并不会花费多少时间。深拷贝可能会花费很长时间。
+
+#### 克隆 Rc<T> 会增加引用计数
+
+```rust
+let a = Rc::new(Cons2(5, Rc::new(Cons2(10, Rc::new(List2::Nil)))));
+println!("Count after create a = {}", Rc::strong_count(&a));
+let b = Cons2(3, Rc::clone(&a));
+println!("Count after create b = {}", Rc::strong_count(&a));
+{
+  let c = Cons2(3, Rc::clone(&a));
+  println!("Count after create c = {}", Rc::strong_count(&a));
+}
+println!("Count after goes out of scope= {}", Rc::strong_count(&a));
+```
+
+引用计数，其值可以通过调用 `Rc::strong_count` 函数获得
+
+### RefCell<T> 和内部可变性模式
+
+**内部可变性**（*Interior mutability*）是 Rust 中的一个设计模式，它允许你即使在有不可变引用时也可以改变数据，这通常是借用规则所不允许的。
+
+
+
+#### 通过 RefCell<T> 在运行时检查借用规则
+
+不同于 `Rc<T>`，`RefCell<T>` 代表其数据的唯一的所有权
+
+1. 在任意给定时刻，只能拥有一个可变引用或任意数量的不可变引用 **之一**（而不是两者）。
+2. 引用必须总是有效的。
+
+类似于 `Rc<T>`，`RefCell<T>` 只能用于单线程场景。
+
+如下为选择 `Box<T>`，`Rc<T>` 或 `RefCell<T>` 的理由：
+
+- `Rc<T>` 允许相同数据有多个所有者；`Box<T>` 和 `RefCell<T>` 有单一所有者。
+- `Box<T>` 允许在编译时执行不可变或可变借用检查；`Rc<T>`仅允许在编译时执行不可变借用检查；`RefCell<T>` 允许在运行时执行不可变或可变借用检查。
+- 因为 `RefCell<T>` 允许在运行时执行可变借用检查，所以我们可以在即便 `RefCell<T>` 自身是不可变的情况下修改其内部的值。
+
+
+
+#### 内部可变性：不可变值的可变借用
+
+* 内部可变性的用例：mock 对象
+
+#### RefCell<T> 在运行时记录借用
+
+当创建不可变和可变引用时，我们分别使用 `&` 和 `&mut` 语法。
+
+对于 `RefCell<T>` 来说，则是 `borrow` 和 `borrow_mut` 方法，这属于 `RefCell<T>` 安全 API 的一部分。
+
+`borrow` 方法返回 `Ref<T>` 类型的智能指针，`borrow_mut` 方法返回 `RefMut<T>` 类型的智能指针。这两个类型都实现了 `Deref`，所以可以当作常规引用对待。
+
+
+
+#### 结合 Rc<T> 和 RefCell<T> 来拥有多个可变数据所有者
+
+`RefCell<T>` 的一个常见用法是与 `Rc<T>` 结合。回忆一下 `Rc<T>` 允许对相同数据有多个所有者，不过只能提供数据的不可变访问。如果有一个储存了 `RefCell<T>` 的 `Rc<T>` 的话，就可以得到有多个所有者 **并且** 可以修改的值了！
+
+```rust
+let value = Rc::new(RefCell::new(5));
+    let a = Rc::new(Cons(Rc::clone(&value), Rc::new(Nil)));
+    let b = Cons(Rc::new(RefCell::new(3)), Rc::clone(&a)); // clone引用 a
+    let c = Cons(Rc::new(RefCell::new(4)), Rc::clone(&a)); // clone引用 a
+
+    *value.borrow_mut() += 10;
+
+    println!("a after = {:?}", a);
+    println!("b after = {:?}", b);
+    println!("c after = {:?}", c);
+```
+
+* 这里创建了一个 `Rc<RefCell<i32>>` 实例并储存在变量 `value` 中以便之后直接访问。
+* 接着在 `a` 中用包含 `value` 的 `Cons` 成员创建了一个 `List`。需要克隆 `value` 以便 `a` 和 `value` 都能拥有其内部值 `5` 的所有权，而不是将所有权从 `value` 移动到 `a` 或者让 `a` 借用 `value`。
+
+注意 `RefCell<T>` 不能用于多线程代码！`Mutex<T>` 是一个线程安全版本的 `RefCell<T>` ，我们会在第十六章讨论 `Mutex<T>`。
+
+
+
+### 引用循环与内存泄漏
+
+
+
+## 16 无畏并发
+
+本章将要涉及到的内容
+
+- 如何创建线程来同时运行多段代码。
+- **消息传递**（*Message passing*）并发，其中信道（channel）被用来在线程间传递消息。
+- **共享状态**（*Shared state*）并发，其中多个线程可以访问同一片数据。
+- `Sync` 和 `Send` trait，将 Rust 的并发保证扩展到用户定义的以及标准库提供的类型中。
+
+
+
+Rust 提供了用于消息传递的信道，和像 `Mutex<T>` 和 `Arc<T>` 这样可以安全的用于并发上下文的智能指针。
+
+
+
+### 使用线程同时运行代码
+
+多线程导致的问题：
+
+- 竞态条件（Race conditions），多个线程以不一致的顺序访问数据或资源
+- 死锁（Deadlocks），两个线程相互等待对方，这会阻止两者继续运行
+- 只会发生在特定情况且难以稳定重现和修复的 bug
+
+#### 使用 spawn 创建新线程
+
+```rust
+thread::spawn(|| {
+  for i in 1..10 {
+    println!("hi number {} from the spawned thread!", i);
+    thread::sleep(Duration::from_millis(1));
+  }
+});
+```
+
+* 使用 join 等待所有线程结束
+
+  `thread::spawn` 的返回值类型是 `JoinHandle`。`JoinHandle` 是一个拥有所有权的值，当对其调用 `join` 方法时，它会等待其线程结束。
+
+  ```rust
+  let handler = thread::spawn(|| {
+    for i in 1..=10 {
+      println!("hi number {} from the spawned thread!", i);
+      thread::sleep(Duration::from_millis(1));
+    }
+  });
+  println!("创建线程结束");
+  for i in 1..=5 {
+    println!("hi number {} from the main thread!", i);
+    thread::sleep(Duration::from_millis(1));
+  }
+  println!("等待线程结束");
+  handler.join().unwrap();
+  println!("线程结束");
+  ```
+
+
+
+#### 将 move 闭包与线程一同使用
+
+```rust
+let v = vec![1, 2, 3];
+let handler = thread::spawn(move || println!("Here's a vector: {:?}", v));
+
+// v 已经被move
+// println!("Here's a vector: {:?}", v);
+
+handler.join().unwrap();
+```
+
+
+
+### 使用消息传递在线程间传送数据
+
+* 信道
+* 发送者
+* 接收者
+
+```rust
+// tx 发送者 rx 接收者
+let (tx, rx) = mpsc::channel();
+let handler = thread::spawn(move || {
+  println!("thread run ");
+  tx.send("hi").unwrap();
+});
+
+let received = rx.recv().unwrap();
+println!("Got {}", received);
+```
+
+信道的接收者有两个有用的方法：`recv` 和 `try_recv`。
+
+* `recv`方法会阻塞主线程执行直到从信道中接收一个值
+* `try_recv` 不会阻塞，相反它立刻返回一个 `Result<T, E>`：`Ok` 值包含可用的信息，而 `Err` 值代表此时没有任何消息。
+
+#### 发送多个值并观察接收者的等待
+
+```rust
+let (tx, rx) = mpsc::channel();
+let handler = thread::spawn(move || {
+  println!("thread run ");
+  let vals = vec![
+    String::from("hi"),
+    String::from("from"),
+    String::from("the"),
+    String::from("thread"),
+  ];
+  for item in vals {
+    tx.send(item).unwrap();
+    // sleep 1s
+    thread::sleep(Duration::from_secs(1));
+  }
+});
+// 阻塞读取
+let received = rx.recv().unwrap();
+println!("Got {}", received);
+// rx当作一个迭代器
+for rec in rx {
+  println!("Got {}", rec);
+}
+```
+
+
+
+#### 通过克隆发送者来创建多个生产者
+
+```rust
+let (tx, rx) = mpsc::channel();
+// 克隆tx,必须在tx使用前clone
+let tx1 = tx.clone();
+
+let handler = thread::spawn(move || {
+  println!("thread run ");
+  let vals = vec![
+    String::from("hi"),
+    String::from("from"),
+    String::from("the"),
+    String::from("thread"),
+  ];
+  for item in vals {
+    tx.send(item).unwrap();
+    // sleep 1s
+    thread::sleep(Duration::from_secs(1));
+  }
+});
+
+let handler = thread::spawn(move || {
+  println!("another thread run ");
+  let vals = vec![
+    String::from("more"),
+    String::from("messages"),
+    String::from("for"),
+    String::from("you"),
+  ];
+  for item in vals {
+    tx1.send(item).unwrap();
+    // sleep 1s
+    thread::sleep(Duration::from_secs(1));
+  }
+});
+
+// 阻塞读取
+let received = rx.recv().unwrap();
+println!("Got {}", received);
+// rx当作一个迭代器
+for rec in rx {
+  println!("Got {}", rec);
+}
+```
+
+
+
+### 共享状态并发
+
+#### 互斥器一次只允许一个线程访问数据
+
+**互斥器**（*mutex*）是 *mutual exclusion* 的缩写，也就是说，任意时刻，其只允许一个线程访问某些数据。
+
+互斥器以难以使用著称，因为你不得不记住：
+
+1. 在使用数据之前尝试获取锁。
+2. 处理完被互斥器所保护的数据之后，必须解锁数据，这样其他线程才能够获取锁。
+
+
+
+#### Mutex<T>的 API
+
+```rust
+let mut handles = vec![];
+let counter = Arc::new(Mutex::new(0));
+println!("m = {:?}", counter);
+{
+  let mut num = counter.lock().unwrap();
+  *num = 1;
+}
+println!("m = {:?}", counter);
+
+for i in 0..10 {
+  let counter = Arc::clone(&counter);
+  let hander = thread::spawn(move || {
+    let mut num = counter.lock().unwrap();
+    *num += 1;
+  });
+  handles.push(hander);
+}
+
+for h in handles {
+  h.join().unwrap();
+}
+
+println!("m = {:?}", counter.lock().unwrap());
+```
+
+`Arc<T>` **正是** 一个类似 `Rc<T>` 并可以安全的用于并发环境的类型。字母 “a” 代表 **原子性**（*atomic*），所以这是一个 **原子引用计数**（*atomically reference counted*）类型。
+
+
+
+#### RefCell<T>/Rc<T> 与 Mutex<T>/Arc<T> 的相似性
+
+`Mutex<T>` 提供了内部可变性，就像 `Cell` 系列类型那样。正如第十五章中使用 `RefCell<T>` 可以改变 `Rc<T>` 中的内容那样，同样的可以使用 `Mutex<T>` 来改变 `Arc<T>` 中的内容。
+
+#### 使用 Sync 和 Send trait 的可扩展并发
+
+##### 通过 Send 允许在线程间转移所有权
+
+* 几乎所有的 Rust 类型都是`Send` 的
+* `Rc<T>`：这是不能 `Send` 的，只实用于单线程
+
+##### Sync 允许多线程访问
+
+`Sync` 标记 trait 表明一个实现了 `Sync` 的类型可以安全的在多个线程中拥有其值的引用
+
+##### 手动实现 Send 和 Sync 是不安全的
+
+
+
+## 17 Rust 的面向对象特性
+
+```rust
+// src/lib.rs
+pub trait Draw {
+    fn draw(&self);
+}
+pub struct Screen {
+    pub components: Vec<Box<dyn Draw>>,
+}
+
+impl Screen {
+    pub fn run(&self) {
+        for component in self.components.iter() {
+            component.draw();
+        }
+    }
+}
+
+pub struct Button {
+    pub width: u32,
+    pub height: u32,
+    pub label: String,
+}
+
+impl Draw for Button {
+    fn draw(&self) {
+        println!("Button[{}][{}-{}]", self.label, self.width, self.height);
+    }
+}
+
+
+// src/main.rs
+use traitoop::{Button, Draw, Screen};
+
+fn main() {
+    println!("顾及不同类型值的 trait 对象");
+
+    let screen = Screen {
+        components: vec![
+            Box::new(SelectBox {
+                width: 75,
+                height: 10,
+                options: vec![
+                    String::from("Yes"),
+                    String::from("Maybe"),
+                    String::from("No"),
+                ],
+            }),
+            Box::new(Button {
+                width: 50,
+                height: 10,
+                label: String::from("OK"),
+            }),
+        ],
+    };
+
+    screen.run();
+}
+
+pub struct SelectBox {
+    width: u32,
+    height: u32,
+    options: Vec<String>,
+}
+
+impl Draw for crate::SelectBox {
+    fn draw(&self) {
+        println!("SelectBox[{}-{}]", self.width, self.height);
+        for item in self.options.iter() {
+            println!(" * {item}")
+        }
+    }
+}
+
+```
+
+### 面向对象设计模式的实现
+
+博客的最终功能看起来像这样：
+
+1. 博文从空白的草案开始。
+2. 一旦草案完成，请求审核博文。
+3. 一旦博文过审，它将被发表。
+4. 只有被发表的博文的内容会被打印，这样就不会意外打印出没有被审核的博文的文本。
+
+
+
+## 18 模式与模式匹配
+
+### 所有可能会用到模式的位置
+
+#### match分支
+
+表达式
+
+```rust
+match VALUE {
+    PATTERN => EXPRESSION,
+    PATTERN => EXPRESSION,
+    PATTERN => EXPRESSION,
+}
+```
+
+* `match` 表达式必须是 **穷尽**（*exhaustive*）的，意为 `match` 表达式所有可能的值都必须被考虑到。
+* 有一个特定的模式 `_` 可以匹配所有情况，不过它从不绑定任何变量。
+
+#### if let条件表达式
+
+`if let` 表达式主要用于编写等同于只关心一个情况的 `match` 语句简写的。
+
+`if let` 可以对应一个可选的带有代码的 `else` 在 `if let` 中的模式不匹配时运行。
+
+```rust
+let favorite_color: Option<&str> = None;
+let is_tuesday = false;
+let age: Result<u8, _> = "34".parse();
+
+if let Some(color) = favorite_color {
+  println!("Using you favorite color, {color}, as the background")
+} else if is_tuesday {
+  println!("Tuesday is green day");
+} else if let Ok(age) = age {
+  if age > 18 {
+    println!("你已长大，要怕绿！");
+  } else {
+    println!("你还小，好好长大！")
+  }
+} else {
+  println!("Using blue as the background color");
+}
+```
+
+`if let` 表达式的缺点在于其穷尽性没有为编译器所检查，而 `match` 表达式则检查了。
+
+#### while let 条件循环
+
+```rust
+let mut stack = Vec::new();
+stack.push("1");
+stack.push("3");
+stack.push("3");
+
+while let Some(str) = stack.pop() {
+  println!(" * {str}")
+}
+```
+
+#### for 循环
+
+```rust
+let v = vec!["a", "b", "c"];
+println!("stack[{:?}]", v);
+for (index, value) in v.iter().enumerate() {
+  println!(" stack[{index}] is [{value}]")
+}
+```
+
+#### let语句
+
+解构一个元组
+
+```rust
+let (x, y, z) = (1, 2, 3);
+println!("{x} {y} {z}");
+// 忽略其他值
+let (x, ..) = (1, 2, 3); 
+println!("{:?}", x)
+```
+
+#### 函数参数
+
+```rust
+{ 
+    // ...
+    println!("\n函数参数");
+    let point = (1, 2);
+    fn_param_pattern(&point);
+    println!("point:{:?}", point)
+}
+
+fn fn_param_pattern(&(x, y): &(i32, i32)) {
+    println!("location [{x},{y}]");
+}
+```
+
+
+
+### Refutability（可反驳性）: 模式是否会匹配失效
+
+模式有两种形式：refutable（可反驳的）和 irrefutable（不可反驳的）
+
+能匹配任何传递的可能值的模式被称为是 **不可反驳的**（*irrefutable*）。一个例子就是 `let x = 5;` 
+
+对某些可能的值进行匹配会失败的模式被称为是 **可反驳的**（*refutable*）。一个这样的例子便是 `if let Some(x) = a_value` 表达式中的 `Some(x)`；如果变量 `a_value` 中的值是 `None` 而不是 `Some`，那么 `Some(x)` 模式不能匹配。
+
+* 函数参数、`let` 语句和 `for` 循环只能接受不可反驳的模式，
+* `if let` 和 `while let` 表达式可以接受可反驳和不可反驳的模式，但编译器会对不可反驳的模式发出警告，因为根据定义它们旨在处理可能的失败：条件表达式的功能在于它能够根据成功或失败来执行不同的操作。
+
+
+
+```rust
+// some_option_value 可能为None
+// let Some(x) = some_option_value;
+if let Some(x) = some_option_value {
+  println!("some_option_value is null时，永不会走到这里");
+} else {
+  println!("这里可以省略");
+}
+```
+
+
+
+### 模式语法
+
+#### 匹配字面值
+
+```rust
+let x = 1;
+match x {
+  1 => println!("one"),
+  2 => println!("two"),
+  3 => println!("three"),
+  _ => println!("anything"),
+}
+```
+
+#### 匹配命名变量
+
+```rust
+let x = Some(10);
+let y = 5;
+match x {
+  Some(5) => println!("5"),
+  // 此处y不是 上述代码定义为5的y
+  // 此处的y匹配任务有效值
+  Some(y) => println!("this is y {y}"),
+  _ => println!("nothing"),
+}
+```
+
+#### 多个模式
+
+在 `match` 表达式中，可以使用 `|` 语法匹配多个模式，它代表 **或**（*or*）运算符模式。
+
+```rust
+let x = 2;
+match x {
+  1 | 5 => println!("match 1|5 {x}"),
+  _ => println!("nothing {x}"),
+}
+```
+
+#### 通过 ..= 匹配值的范围
+
+```rust
+let c = 'c';
+match c {
+  'a'..='z' => println!("小写字母 {c}"),
+  'A'..='Z' => println!("小写字母 {c}"),
+  _ => println!("非法字母 {c}"),
+}
+```
+
+
+
+#### 解构并分解值
+
+* 解构结构体
+
+  ```rust
+  let p = Point { x: 5, y: 10 };
+  let Point { x, y } = p;
+  println!("point[{x}, {y}]");
+  
+  let p = Point { x: 0, y: 7 };
+  match p {
+    Point { x, y: 0 } => println!("On the x axis is {:?}", p),
+    // 匹配上x后进入
+    Point { x: 0, y } => println!("On the y axis is {:?}", p),
+    Point { x, y } => println!("Point {:?}", p),
+  }
+  ```
+
+* 解构枚举
+
+  ```rust
+  enum Message {
+      Quit,
+      Move { x: i32, y: i32 },
+      Writer(String),
+      ChangeColor(i32, i32, i32),
+  }
+  // ...
+  let msg = Message::ChangeColor(1, 2, 3);
+  match msg {
+    Message::Quit => println!("this is quit"),
+    Message::Move { x, y } => println!("move {x} {y}"),
+    Message::Writer(msg) => println!("writer [{msg}]"),
+    Message::ChangeColor(a, b, c) => println!("clor {a} {b} {c}"),
+  }
+  ```
+
+* 解构嵌套的结构体和枚举
+
+  ```rust
+  #[derive(Debug)]
+  enum Clor {
+      Rgb(i32, i32, i32),
+      Hsv(i32, i32, i32),
+  }
+  
+  #[derive(Debug)]
+  enum Message2 {
+      Quit,
+      Move { x: i32, y: i32 },
+      Writer(String),
+      ChangeColor(Clor),
+  }
+  //... 
+  let msg = Message2::ChangeColor(Clor::Hsv(1, 2, 3));
+  match msg {
+    Message2::Quit => println!("quit"),
+    Message2::Move { x, y } => println!("move {x} {y}"),
+    Message2::Writer(str) => println!("writer [{str}]"),
+    Message2::ChangeColor(Clor::Hsv(a, b, c)) => println!("color hsv {a} {b} {c}"),
+    Message2::ChangeColor(Clor::Rgb(a, b, c)) => println!("color rgb {a} {b} {c}"),
+  }
+  ```
+
+* 解构结构体和元组
+
+  ```rust
+  let ((feet, inches), Point { x, y }) = ((3, 10), Point { x: 3, y: -10 });
+  ```
+
+#### 忽略模式中的值
+
+* 使用 _ 忽略整个值
+
+  ```rust
+  fn foo(_: i32, y: i32) {
+      println!("This code only uses the y parameter: {}", y);
+  }
+  
+  fn main() {
+      foo(3, 4);
+  }
+  
+  ```
+
+* 使用嵌套的 _ 忽略部分值
+
+  ```rust
+  let mut setting_value = Some(5);
+  let new_setting_value = Some(10);
+  match (setting_value, new_setting_value) {
+    (Some(_), Some(k_)) => {
+      println!("无用功....")
+    }
+    _ => {
+      setting_value = new_setting_value;
+    }
+  }
+  println!(
+    "setting_value is {:?}, new_setting_value is {:?}",
+    setting_value, new_setting_value
+  );
+  
+  let numbers = (1, 2, 3, 4, 5);
+  match numbers {
+    (first, _, third, _, fifty) => {
+      println!("first:{first} third:{third} fifty:{fifty}");
+    }
+  }
+  ```
+
+* 通过在名字前以一个 _ 开头来忽略未使用的变量
+
+  ```rust
+  let _x = 5;
+  // 编译器会提示，此变量未使用
+  let y = 5;
+  
+  let _some = Some(5);
+  // 这里_some已经移动了
+  if let Some(_t) = _some {
+    println!("_t is {}", _t);
+  }
+  // 不能再使用_some了，因为 if let 已经移动了_some
+  // println!("unable use _some again {_some}");
+  let _some = Some(5);
+  // _some没有移动，if let后仍可以使用
+  if let Some(_) = _some {
+    println!("got the value {:?}", _some);
+  }
+  println!("unable use _some again {:?}", _some);
+  ```
+
+* 用 .. 忽略剩余值
+
+  ```rust
+  let p = Point2 { x: 1, y: 2, z: 3 };
+  match p {
+    Point2 { x, .. } => {
+      println!("x is {x}");
+    }
+  }
+  
+  let numbers = (1, 2, 3, 4, 5);
+  match numbers {
+    (first, .., last) => {
+      println!("first is {first} last is {last}");
+    }
+  }
+  ```
+
+#### 匹配守卫提供的额外条件
+
+**匹配守卫**（*match guard*）是一个指定于 `match` 分支模式之后的额外 `if` 条件，它也必须被满足才能选择此分支。匹配守卫用于表达比单独的模式所能允许的更为复杂的情况。
+
+```rust
+let num = Some(4);
+match num {
+  Some(x) if x % 2 == 0 => println!("是偶数"),
+  Some(x) => println!("是奇数"),
+  _ => println!("不知道是啥"),
+}
+
+let x = 4;
+let y = false;
+match x {
+  4 | 5 | 6 if y => println!("match 4|5|5 and y is true"),
+  _ => println!("default ..."),
+}
+```
+
+
+
+#### @ 绑定
+
+```rust
+let point = Point2 { x: 3, y: 4, z: 5 };
+match point {
+  Point2 {
+    // 赋值给变更x_val
+    x: x_val @ 1..=2,
+    y,
+    z,
+  } => println!(" x at [1..2] {x} {x_val}"),
+  Point2 { x: 3..=8, y, z } => println!(" x at [3..8] {x}"),
+  _ => (),
+}
+```
+
+
+
+## 19 高级特征
+
+本章将涉及如下内容：
+
+- 不安全 Rust：用于当需要舍弃 Rust 的某些保证并负责手动维持这些保证
+- 高级 trait：与 trait 相关的关联类型，默认类型参数，完全限定语法（fully qualified syntax），超（父）trait（supertraits）和 newtype 模式
+- 高级类型：关于 newtype 模式的更多内容，类型别名，never 类型和动态大小类型
+- 高级函数和闭包：函数指针和返回闭包
+- 宏：定义在编译时定义更多代码的方式
+
+### 1.不安全 Rust
+
+#### 不安全的超能力
+
+- 解引用裸指针
+- 调用不安全的函数或方法
+- 访问或修改可变静态变量
+- 实现不安全 trait
+- 访问 `union` 的字段
+
+
+
+`unsafe` 并不会关闭借用检查器或禁用任何其他 Rust 安全检查：如果在不安全代码中使用引用，它仍会被检查。
+
+`unsafe` 关键字只是提供了那五个不会被编译器检查内存安全的功能。
+
+```rust
+let mut num = 5;
+unsafe
+{
+  let r1 = &num as *const i32;
+  let r2 = &mut num as *mut i32;
+  println!("num is {num} r1:{} r2:{} ", *r1, *r2); // num is 5 r1:5 r2:5 
+  num = 6;
+  println!("num is {num} r1:{} r2:{} ", *r1, *r2); // num is 6 r1:6 r2:6 
+};
+```
+
+
+
+#### 调用不安全函数或方法
+
+```rust
+println!("\n调用不安全函数或方法");
+unsafe { dangerous() };
+
+unsafe fn dangerous() {
+    println!("this is an dangerous function!");
+}
+```
+
+不安全函数体也是有效的 `unsafe` 块，所以在不安全函数中进行另一个不安全操作时无需新增额外的 `unsafe` 块
+
+
+
+##### 创建不安全代码的安全抽象
+
+```rust
+let mut v = vec![1,2,3,4,5,6];
+let r = &mut v[..];
+
+let (a,b) = r.split_at_mut(3);
+println!("a is {:?}", a);
+println!("b is {:?}", b);
+assert_eq!(a, &mut [1,2,3]);
+assert_eq!(b, &mut [4,5,6]);
+
+fn split_at_mut(values: &mut [i32], mid: usize) -> (&mut [i32], &mut [i32]) {
+    let len = values.len();
+    let ptr = values.as_mut_ptr();
+
+    assert!(mid <= len);
+
+    unsafe {
+        (
+            slice::from_raw_parts_mut(ptr, mid),
+            slice::from_raw_parts_mut(ptr, mid + 1),
+        )
+    }
+}
+```
+
+##### 使用 extern 函数调用外部代码
+
+```rust
+unsafe{
+  println!("-3的绝对值是{}", abs(-3));
+}
+extern "C" {
+    fn abs(input:i32) ->i32;
+}
+
+// 供C语言调用call_from_c()
+#[no_mangle]
+pub extern "C" fn call_from_c() {
+    println!("Just called a Rust function from C!");
+}
+```
+
+
+
+#### 访问或修改可变静态变量
+
+```rust
+static HELLO_WORLD: &str = "Hello, world!";
+
+fn main() {
+    println!("name is: {}", HELLO_WORLD);
+}
+```
+
+* 通常静态变量的名称采用 `SCREAMING_SNAKE_CASE` 写法。
+
+* 静态变量只能储存拥有 `'static` 生命周期的引用
+
+  
+
+**常量与不可变静态变量区别**
+
+*   静态变量中的值有一个固定的内存地址，使用这个值总是会访问相同的地址
+*   常量则允许在任何被用到的时候复制其数据。
+*   静态变量可以是可变的，访问和修改可变静态变量都是 **不安全** 的
+
+```rust
+static mut COUNTER: u32 = 0;
+
+fn add_to_count(inc: u32) {
+    unsafe {
+        COUNTER += inc;
+    }
+}
+
+fn main() {
+    add_to_count(3);
+
+    unsafe {
+        println!("COUNTER: {}", COUNTER);
+    }
+}
+```
+
+
+
+#### 实现不安全 trait
+
+当 trait 中至少有一个方法中包含编译器无法验证的不变式（invariant）时 trait 是不安全的。可以在 `trait` 之前增加 `unsafe` 关键字将 trait 声明为 `unsafe`，同时 trait 的实现也必须标记为 `unsafe`
+
+```rust
+unsafe trait Foo {
+    // methods go here
+}
+unsafe impl Foo for i32 {
+    // method implementations go here
+}
+fn main() {}
+```
+
+
+
+#### 访问联合体中的字段
+
+`union` 和 `struct` 类似，但是在一个实例中同时只能使用一个声明的字段。联合体主要用于和 C 代码中的联合体交互。
+
+
+
+### 2 高级trait
+
+#### 关联类型在 trait 定义中指定占位符类型
+
+> **关联类型**（*associated types*）是一个将类型占位符与 trait 相关联的方式，这样 trait 的方法签名中就可以使用这些占位符类型。trait 的实现者会针对特定的实现在这个占位符类型指定相应的具体类型。如此可以定义一个使用多种类型的 trait，直到实现此 trait 时都无需知道这些类型具体是什么。
+
+标准库提供的 `Iterator` trait
+
+```rust
+pub trait Iterator {
+    type Item;
+    fn next(&mut self) -> Option<Self::Item>;
+}
+```
+
+* Item是一个占位符类型，同时`next`方法定义表明它返回`Option<Self::Item>`类型的值
+* 此trait的实现者会指定`Item`的具体类型
+
+```rust
+pub struct Counter {
+    index: u32,
+    num: u32,
+}
+
+impl Iterator for Counter {
+    type Item = u32;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        todo!()
+    }
+}
+```
+
+#### 默认泛型类型参数和运算符重载
+
+```rust
+let p1 = Point { x: 1, y: 1 };
+let p2 = Point { x: 1, y: 1 };
+let p4 = Point { x: 2, y: 2 };
+assert_eq!(p1 + p2, p4);
+
+#[derive(PartialEq, Debug)]
+struct Point {
+    x: i32,
+    y: i32,
+}
+// 为 Point 实现 Add 时，使用了默认的 Rhs，因为我们希望将两个 Point 实例相加
+impl Add for Point {
+    type Output = Point;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Point {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+```
+
+ **newtype 模式**
+
+```rust
+let meters = Meters { 0: 1 };
+let mill_meters = Millimeters { 0: 1 };
+println!("meters:{:?} mill_meters:{:?}", meters, mill_meters);
+let mill_meters = mill_meters.add(meters);
+println!("mill_meters:{:?}", mill_meters);
+
+
+#[derive(Debug)]
+pub struct Millimeters(pub u32);
+#[derive(Debug)]
+pub struct Meters(pub u32);
+
+impl Add<Meters> for Millimeters {
+    type Output = Millimeters;
+
+    fn add(self, rhs: Meters) -> Self::Output {
+        Millimeters(self.0 + rhs.0 * 1000)
+    }
+}
+```
+
+
+
+#### 完全限定语法与消歧义：调用相同名称的方法
+
+```rust
+let human = Human {};
+human.fly(); // 这个人有特殊功能...飞....
+Pilot::fly(&human); //这是一个飞行员...
+Wizard::fly(&human); // 这是一个哈里波特
+
+
+trait Pilot {
+    fn fly(&self);
+}
+trait Wizard {
+    fn fly(&self);
+}
+struct Human;
+impl Pilot for Human {
+    fn fly(&self) {
+        println!("这是一个飞行员...")
+    }
+}
+impl Wizard for Human {
+    fn fly(&self) {
+        println!("这是一个哈里波特");
+    }
+}
+impl Human {
+    fn fly(&self) {
+        println!("这个人有特殊功能...飞....");
+    }
+}
+```
+
+**完全限定**
+
+```rust
+println!("A baby dog is called a {}", Dog::baby_name()); // A baby dog is called a Spot
+//  完全限定语法
+println!("A baby dog is called a {}", <Dog as Animal>::baby_name()); // A baby dog is called a puppy
+
+trait Animal {
+    fn baby_name() -> String;
+}
+struct Dog;
+impl Dog {
+    fn baby_name() -> String {
+        String::from("Spot")
+    }
+}
+impl Animal for Dog {
+    fn baby_name() -> String {
+        String::from("puppy")
+    }
+}
+```
+
+完全限定语法定义为：
+
+`<Type as Trait>::function(receiver_if_method, next_arg, ...);`
+
+
+
+#### 父 trait 用于在另一个 trait 中使用某 trait 的功能
+
+```rust
+// 父 trait 用于在另一个 trait 中使用某 trait 的功能
+struct PointDisplay {
+    x: i32,
+    y: i32,
+}
+pub trait OutlinePrint: fmt::Display {
+    fn outline_print(&self) {
+        let output = self.to_string();
+        let len = output.len();
+
+        println!("{}", "*".repeat(len + 6));
+        println!("* {} *", " ".repeat(len + 2));
+        println!("*  {}  *", output);
+        println!("* {} *", " ".repeat(len + 2));
+        println!("{}", "*".repeat(len + 6));
+    }
+}
+impl OutlinePrint for PointDisplay {}
+
+impl fmt::Display for PointDisplay {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "({},{})", self.x, self.y)
+    }
+}
+
+let point = PointDisplay { x: 1, y: 3 };
+println!("{}", point);
+println!("===========================");
+crate::OutlinePrint::outline_print(&point);
+println!("===========================");
+```
+
+
+
+#### newtype 模式用以在外部类型上实现外部 trait
+
+```rust
+// newtype 模式用以在外部类型上实现外部 trait
+struct Wrapper(Vec<String>);
+impl fmt::Display for Wrapper {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.join(" , "))
+    }
+}
+
+let w = Wrapper(vec![String::from("hello"), String::from("world")]);
+println!("w = {}", w); // w = hello , world
+```
+
+
+
+
+
+
+
+
 
 
 
