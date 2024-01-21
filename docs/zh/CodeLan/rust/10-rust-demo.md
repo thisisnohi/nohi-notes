@@ -3993,6 +3993,278 @@ println!("w = {}", w); // w = hello , world
 
 
 
+### 3高级类型
+
+#### 为了类型安全和抽象而使用 newtype 模式
+
+```rust
+pub struct Millimeters(pub u32);
+pub struct Meters(pub u32);
+```
+
+#### 类型别名用来创建类型同义词
+
+Rust 提供了声明 **类型别名**（*type alias*）的能力，使用 `type` 关键字来给予现有类型另一个名字。例如，可以像这样创建 `i32` 的别名 `Kilometers`：
+
+```rust
+type KiloMeters = i32;
+let x = 5;
+let y: KiloMeters = 5;
+println!("x = {}, y = {}  x+y={}", x, y, x + y);
+```
+
+类型别名的主要用途是减少重复
+
+```rust
+// 定义
+type Thunk = Box<dyn Fn() + Send + 'static>;
+fn takes_long_type(f: Thunk) {
+    f();
+}
+fn return_long_type(str: &str) -> Thunk {
+    Box::new(|| println!("return_long_type"))
+}
+
+// 使用
+let f: Thunk = Box::new(|| println!("hi"));
+f();
+takes_long_type(f);
+let rs = return_long_type("123");
+rs();
+```
+
+#### 从不返回的 never type
+
+Rust 有一个叫做 `!` 的特殊类型。在类型理论术语中，它被称为 *empty type*，因为它没有值。我们更倾向于称之为 *never type*。这个名字描述了它的作用：在函数从不返回的时候充当返回值。
+
+从不返回的函数被称为 **发散函数**（*diverging functions*）
+
+```rsut
+panic! 是 ! 类型
+continue 的值是 !
+```
+
+
+
+#### 动态大小类型和 Sized trait
+
+**动态大小类型**（*dynamically sized types*）。这有时被称为 “DST” 或 “unsized types”，这些类型允许我们处理只有在运行时才知道大小的类型。
+
+`str` 是一个 DST
+
+```rust
+fn generic<T>(t: T) {
+    // --snip--
+}
+fn generic<T: Sized>(t: T) {
+    // --snip--
+}
+fn generic<T: ?Sized>(t: &T) {
+    // --snip--
+}
+```
+
+### 4 高级函数与闭包
+
+#### 函数指针
+
+```rust
+println!("\n函数指针");
+println!("5 add one is {}", add_one(5));  // 5 add one is 6
+println!("5 add twice is {}", add_twice(add_one, 5)); // 5 add twice is 12
+
+fn add_one(val: i32) -> i32 {
+    val + 1
+}
+
+fn add_twice(f: fn(i32) -> i32, val: i32) -> i32 {
+    f(val) + f(val)
+}
+
+```
+
+函数指针实现了所有三个闭包 trait（`Fn`、`FnMut` 和 `FnOnce`），所以总是可以在调用期望闭包的函数时传递函数指针作为参数。
+
+```rust
+let rs: Vec<Status> = (0u32..5).map(Status::Value).collect();
+println!("{:?}", rs);
+
+
+#[derive(Debug)]
+enum Status {
+    Value(u32),
+    Stop,
+}
+```
+
+
+
+#### 返回闭包
+
+```rust
+println!("\n返回闭包");
+let f = return_closual();
+println!("{}", f(1));
+println!("{}", f(2));
+// 直接返回 |x| x + 1 会异常。Rust并不知道需要多少空间来储存闭包
+fn return_closual() -> Box<dyn Fn(i32) -> i32> {
+    Box::new(|x| x + 1)
+}
+
+```
+
+
+
+### 5 宏
+
+>  宏，声明宏、过程宏
+
+**宏**（*Macro*）指的是 Rust 中一系列的功能：使用 `macro_rules!` 的 **声明**（*Declarative*）宏，和三种 **过程**（*Procedural*）宏：
+
+- 自定义 `#[derive]` 宏在结构体和枚举上指定通过 `derive` 属性添加的代码
+- 类属性（Attribute-like）宏定义可用于任意项的自定义属性
+- 类函数宏看起来像函数不过作用于作为参数传递的 token
+
+#### 宏和函数的区别
+
+从根本上来说，宏是一种为写其他代码而写代码的方式，即所谓的 **元编程**（*metaprogramming*）
+
+* 特点：
+  * 一个函数签名必须声明函数参数个数和类型。相比之下，宏能够接收不同数量的参数：用一个参数调用 `println!("hello")` 或用两个参数调用 `println!("hello {}", name)` 。
+  * 宏可以在编译器翻译代码前展开
+  * 实现宏不如实现函数的一面是宏定义要比函数定义更复杂，因为你正在编写生成 Rust 代码的 Rust 代码。由于这样的间接性，宏定义通常要比函数定义更难阅读、理解以及维护。
+  * 在一个文件里调用宏 **之前** 必须定义它，或将其引入作用域，而函数则可以在任何地方定义和调用。
+
+
+
+#### 使用 macro_rules! 的声明宏用于通用元编程
+
+```rsut
+#[macro_export]
+macro_rules! vec {
+    ( $( $x:expr ),* ) => {
+        {
+            let mut temp_vec = Vec::new();
+            $(
+                temp_vec.push($x);
+            )*
+            temp_vec
+        }
+    };
+}
+```
+
+
+
+#### 用于从属性生成代码的过程宏
+
+> **过程宏**（*procedural macros*）有三种类型的过程宏（自定义派生（derive），类属性和类函数），不过它们的工作方式都类似。
+
+```rsut
+use proc_macro;
+
+#[some_attribute]
+pub fn some_name(input: TokenStream) -> TokenStream {
+}
+```
+
+
+
+#### 如何编写自定义 derive 宏
+
+了三个新的 crate：`proc_macro` 、 [`syn`](https://crates.io/crates/syn) 和 [`quote`](https://crates.io/crates/quote) 。Rust 自带 `proc_macro` crate，因此无需将其加到 *Cargo.toml* 文件的依赖中。`proc_macro` crate 是编译器用来读取和操作我们 Rust 代码的 API。
+
+* `syn` crate 将字符串中的 Rust 代码解析成为一个可以操作的数据结构。
+* `quote` 则将 `syn` 解析的数据结构转换回 Rust 代码。这些 crate 让解析任何我们所要处理的 Rust 代码变得更简单：为 Rust 编写整个的解析器并不是一件简单的工作。
+
+```rust
+// 三个create, 两个目录下
+// 1. 宏定义及实现
+// hello_macro/src/lib/rs
+// 定义trait
+pub trait HelloMacro {
+    fn hello_macro();
+}
+// 2. 宏实现（derive）hello_macro/hello_macro_derive
+// 约定/要求derive与trait定义的create下
+// 2.1 hello_macro/hello_macro_derive/Cargo.toml
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "1.0.109"
+quote = "1.0.21"
+
+// 2.2 hello_macro/hello_macro_derive/src/lib.rs
+use proc_macro::TokenStream;
+use quote::quote;
+use syn;
+
+#[proc_macro_derive(HelloMacro)]
+pub fn hello_macro_derive(input: TokenStream) -> TokenStream {
+    // Construct a representation of Rust code as a syntax tree
+    // that we can manipulate
+    let ast = syn::parse(input).unwrap();
+
+    // Build the trait implementation
+    impl_hello_macro(&ast)
+}
+
+fn impl_hello_macro(ast: &syn::DeriveInput) -> TokenStream {
+    let name = &ast.ident;
+    let gen = quote! {
+        impl HelloMacro for #name {
+            fn hello_macro() {
+                println!(".....Hello, Macro! My name is {}!", stringify!(#name));
+            }
+        }
+    };
+    gen.into()
+}
+
+// 3 macros_demo 应用
+// 3.1 macros_demo/Cargo.toml 添加依赖
+[dependencies]
+hello_macro = { path = "../hello_macro" }
+hello_macro_derive = { path = "../hello_macro/hello_macro_derive" }
+
+// 3.2 macros_demo/src/main.rs
+use hello_macro::HelloMacro;
+use hello_macro_derive::HelloMacro;
+#[derive(HelloMacro)]
+struct Pancakes;
+
+fn main() {
+    println!("\n如何编写自定义 derive 宏");
+    Pancakes::hello_macro();
+}
+```
+
+
+
+#### 类属性宏
+
+类属性宏与自定义派生宏相似，不同的是 `derive` 属性生成代码，它们（类属性宏）能让你创建新的属性。
+
+```rust
+#[route(GET, "/")]
+fn index() {
+```
+
+#### 类函数宏
+
+类函数（Function-like）宏的定义看起来像函数调用的宏。类似于 `macro_rules!`，它们比函数更灵活；
+
+```rust
+let sql = sql!(SELECT * FROM posts WHERE id=1);
+```
+
+
+
+
+
+
+
 
 
 
