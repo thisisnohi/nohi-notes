@@ -225,7 +225,6 @@ docker run --name oracle19c -p 11521:1521 -p 15500:5500 -v /Users/nohi/data/dock
 alter session set container=pdb服务名;
 alter pluggable database pdb服务名 open;
 4.尝试创建不带C##的用户吧。
-
 ```
 
 
