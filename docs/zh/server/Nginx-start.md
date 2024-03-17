@@ -24,7 +24,17 @@ sidebar: auto
 ### 安装
 
 * ` ./configure --prefix=/usr/local/nginx`
+
+  ```shell
+  ./configure --prefix=/usr/local/nginx --with-http_stub_status_module --with-http_ssl_module --add-module=./nginx-rtmp-module
+  
+  -- rtmp模块
+  1. git clone https://github.com/arut/nginx-rtmp-module.git
+  2. ./configure命令添加 --add-module=./nginx-rtmp-module
+  ```
+
 * `make `
+
 * `make install`
 
 ### 启停Nginx

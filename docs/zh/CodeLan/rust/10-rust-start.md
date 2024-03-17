@@ -14,6 +14,30 @@
 
 
 
+* 设置 Rustup 镜像
+
+  ```shell
+  # 临时替换
+  export RUSTUP_UPDATE_ROOT=https://mirrors.aliyun.com/rustup/rustup
+  export RUSTUP_DIST_SERVER=https://mirrors.aliyun.com/rustup
+  
+  # 永久替换
+  
+  # bash用户
+  echo 'export RUSTUP_UPDATE_ROOT=https://mirrors.aliyun.com/rustup/rustup' >> ~/.bash_profile
+  echo 'export RUSTUP_DIST_SERVER=https://mirrors.aliyun.com/rustup' >> ~/.bash_profile
+  source ~/.bash_profile
+  
+  # zsh用户
+  echo 'export RUSTUP_UPDATE_ROOT=https://mirrors.aliyun.com/rustup/rustup' >> ~/.zshrc
+  echo 'export RUSTUP_DIST_SERVER=https://mirrors.aliyun.com/rustup' >> ~/.zshrc
+  source ~/.zshrc
+  ```
+
+  
+
+
+
 ## 犯错的地方
 
 ### 孤独规则
@@ -22,7 +46,7 @@
 
 
 
-
+### 设置 Rustup 镜像
 
 
 
