@@ -5,6 +5,8 @@ import { dbItems } from "../items/dbItems";
 import { htmlItems } from "../items/htmlItems";
 import { versionItems } from "../items/versionItems";
 import { serverItems } from "../items/serverItems";
+import { javaItems } from "../items/javaItems.js";
+import { codeLanItems } from "../items/codeLanItems.js";
 
 export const navbarEn: NavbarConfig =  [
   // NavbarItem
@@ -13,6 +15,14 @@ export const navbarEn: NavbarConfig =  [
     link: "/zh/notes/",
   },
   // NavbarGroup
+  {
+    text: "Java",
+    children: javaItems,
+  },
+  {
+    text: "CodeLan",
+    children: codeLanItems,
+  },
   {
     text: "JVM",
     children: jvmItems,
@@ -36,10 +46,14 @@ export const navbarEn: NavbarConfig =  [
     children: htmlItems,
   },
   {
-    text: "VERSION",
+    text: "VERSION Control",
     children: versionItems,
   }, {
     text: "SERVER",
     children: serverItems,
+  },
+  {
+    text: `VuePress2参考指南`,
+    link: "https://v2.vuepress.vuejs.org/zh/",
   },
 ]

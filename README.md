@@ -7,8 +7,10 @@
 
 ## 利用vuePress制作个人笔记
 * docs/zh/notes目录下新增xxx.md文件
-* docs/.vuepress/configs/config.ts文件 配置导航菜单
+* docs/.vuepress/config.ts文件 配置导航菜单
   * docs/.vuepress/configs/items目录对应菜单下增加节点
+  * docs/.vuepress/configs/navbar目录，配置导航页
+  * docs/.vuepress/configs/sidebar目录，配置页面左侧导航树
 * 新增目录，需要在目录下增加README.md(md小写)
 ```ts
  export const dbItems = [
@@ -28,7 +30,7 @@
 ## Deploy
 ```
 yarn build 
-cd nohi-notes (config.js中的对应的dest)
+cd nohi-notes (config.js中的对应的dist)
 注：.gitignore忽略dest对应目录,dest对应目录push到master/gh-pages
 git init
 git add -A

@@ -594,7 +594,7 @@ fn value_in_cents(value: Coin) -> i32 {
 }
 ```
 
-### 匹配 Option<T>
+### 匹配 `Option<T>`
 
 ```rust
 println!("====option=====");
@@ -1253,9 +1253,9 @@ for (key, value) in &scores {
 }
 ```
 
-* get 方法返回 Option<&V>，如果某个键在哈希 map 中没有对应的值，get 会返回 None。
+* get 方法返回 `Option<&V>`，如果某个键在哈希 map 中没有对应的值，get 会返回 None。
 
-* 程序中通过调用 copied 方法来获取一个 Option<i32> 而不是 Option<&i32>，
+* 程序中通过调用 copied 方法来获取一个 `Option<i32>` 而不是 `Option<&i32>`，
 
 * 接着调用 unwrap_or 在 scores 中没有该键所对应的项时将其设置为零
 
@@ -2714,7 +2714,7 @@ cargo new add_one
 
 
 
-### 使用Box<T>指向堆上的数据
+### 使用`Box<T>`指向堆上的数据
 
 最简单直接的智能指针是 *box*，其类型是 `Box<T>`。box 允许你将一个值放在堆上而不是栈上。留在栈上的则是指向堆数据的指针
 
@@ -2756,7 +2756,7 @@ fn main() {
   //assert_eq!(5, y);
   ```
 
-* 像引用一样使用 Box<T>
+* 像引用一样使用 `Box<T>`
 
   ```rust
   let x = 5;
@@ -2871,7 +2871,7 @@ println!("a is {:?}", a);
 
 
 
-### Rc<T> 引用计数智能指针
+### `Rc<T> `引用计数智能指针
 
 `Rc<T>`，其为 **引用计数**（*reference counting*）的缩写。
 
@@ -2894,7 +2894,7 @@ let c = Cons2(4, Rc::clone(&a));
 
   `Rc::clone` 的实现并不像大部分类型的 `clone` 实现那样对所有数据进行深拷贝。`Rc::clone` 只会增加引用计数，这并不会花费多少时间。深拷贝可能会花费很长时间。
 
-#### 克隆 Rc<T> 会增加引用计数
+#### 克隆 `Rc<T> `会增加引用计数
 
 ```rust
 let a = Rc::new(Cons2(5, Rc::new(Cons2(10, Rc::new(List2::Nil)))));
@@ -2910,13 +2910,13 @@ println!("Count after goes out of scope= {}", Rc::strong_count(&a));
 
 引用计数，其值可以通过调用 `Rc::strong_count` 函数获得
 
-### RefCell<T> 和内部可变性模式
+### `RefCell<T>` 和内部可变性模式
 
 **内部可变性**（*Interior mutability*）是 Rust 中的一个设计模式，它允许你即使在有不可变引用时也可以改变数据，这通常是借用规则所不允许的。
 
 
 
-#### 通过 RefCell<T> 在运行时检查借用规则
+#### `通过 RefCell<T>` 在运行时检查借用规则
 
 不同于 `Rc<T>`，`RefCell<T>` 代表其数据的唯一的所有权
 
@@ -2937,7 +2937,7 @@ println!("Count after goes out of scope= {}", Rc::strong_count(&a));
 
 * 内部可变性的用例：mock 对象
 
-#### RefCell<T> 在运行时记录借用
+#### `RefCell<T>` 在运行时记录借用
 
 当创建不可变和可变引用时，我们分别使用 `&` 和 `&mut` 语法。
 
@@ -2947,7 +2947,7 @@ println!("Count after goes out of scope= {}", Rc::strong_count(&a));
 
 
 
-#### 结合 Rc<T> 和 RefCell<T> 来拥有多个可变数据所有者
+#### 结合 `Rc<T>` 和 `RefCell<T>` 来拥有多个可变数据所有者
 
 `RefCell<T>` 的一个常见用法是与 `Rc<T>` 结合。回忆一下 `Rc<T>` 允许对相同数据有多个所有者，不过只能提供数据的不可变访问。如果有一个储存了 `RefCell<T>` 的 `Rc<T>` 的话，就可以得到有多个所有者 **并且** 可以修改的值了！
 
@@ -3159,7 +3159,7 @@ for rec in rx {
 
 
 
-#### Mutex<T>的 API
+#### `Mutex<T>`的 API
 
 ```rust
 let mut handles = vec![];
@@ -3191,7 +3191,7 @@ println!("m = {:?}", counter.lock().unwrap());
 
 
 
-#### RefCell<T>/Rc<T> 与 Mutex<T>/Arc<T> 的相似性
+#### `RefCell<T>/Rc<T>` 与` Mutex<T>/Arc<T> `的相似性
 
 `Mutex<T>` 提供了内部可变性，就像 `Cell` 系列类型那样。正如第十五章中使用 `RefCell<T>` 可以改变 `Rc<T>` 中的内容那样，同样的可以使用 `Mutex<T>` 来改变 `Arc<T>` 中的内容。
 

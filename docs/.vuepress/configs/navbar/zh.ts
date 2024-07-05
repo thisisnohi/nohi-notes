@@ -2,6 +2,7 @@
 import type { NavbarConfig } from "@vuepress/theme-default";
 import { jvmItems } from "../items/jvmItems";
 import { javaItems } from "../items/javaItems";
+import { codeLanItems } from "../items/codeLanItems";
 import { dbItems } from "../items/dbItems";
 import { htmlItems } from "../items/htmlItems";
 import { versionItems } from "../items/versionItems";
@@ -20,6 +21,10 @@ export const navbarZh: NavbarConfig = [
   {
     text: "Java",
     children: javaItems,
+  },
+  {
+    text: "语言",
+    children: codeLanItems,
   },
   {
     text: "JVM",
