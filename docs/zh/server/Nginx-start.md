@@ -26,7 +26,7 @@ sidebar: auto
 * ` ./configure --prefix=/usr/local/nginx`
 
   ```shell
-  ./configure --prefix=/usr/local/nginx --with-http_stub_status_module --with-http_ssl_module --add-module=./nginx-rtmp-module
+  ./configure --prefix=/usr/local/nginx --with-http_stub_status_module --with-http_ssl_module --with-stream=dynamic --add-module=./nginx-rtmp-module
   
   -- rtmp模块
   1. git clone https://github.com/arut/nginx-rtmp-module.git
