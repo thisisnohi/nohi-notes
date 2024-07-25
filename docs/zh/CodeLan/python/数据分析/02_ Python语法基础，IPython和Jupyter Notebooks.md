@@ -62,6 +62,14 @@ from numpy.random import randn
 
 
 
+| enter       | 转入编辑模式                 |                      |
+| ----------- | ---------------------------- | -------------------- |
+| shift+enter | 运行本单元，选中下个单元     |                      |
+| ctrl+enter  | 运行本单元                   |                      |
+| alt+enter   | 运行本单元，在其下插入新单元 | 新单元默认为编辑模式 |
+
+
+
 ### 魔术命令
 
 ![img](https://upload-images.jianshu.io/upload_images/7178691-c72b11add9b8ccf8.png?imageMogr2/auto-orient/strip|imageView2/2/w/695/format/webp)
