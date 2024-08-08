@@ -40,11 +40,17 @@
 * 《适用于所有人的人工智能课程》英文，暂不学习
 * 《动手学深度学习》中文 : 动手学深度学习.md
 
+<font color=red>**水平不够，学习吃力**</font>
+
 
 
 ## 千问
 
-> https://qianwen.aliyun.com/
+> 阿里出品
+>
+> 在线问答：https://qianwen.aliyun.com/
+
+《阿里AI.md》
 
 
 
