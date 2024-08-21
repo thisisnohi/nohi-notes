@@ -55,5 +55,23 @@
   
   ```
 
-  
+
+## 常用语句/函数
+
+### 日期/时间
+
+```mysql
+-- 获取当前系统日期、时间
+select sysdate() "当前系统时间(年月日时分秒)", current_date "日期", current_time "时间",current_timestamp "年月日时分秒";
+
+-- 日期时间转换为字符串
+select current_timestamp, date_format(current_timestamp, '%Y-%m-%d'), date_format(current_timestamp, '%h-%i-%s');
+
+-- 增加秒数
+select now(), addtime(now(),1), addtime(now(),10), addtime(now(),-10); -- 加1秒
+-- adddate 增加 秒、时、天、月、年
+select now() 当前, adddate(now(),1) 一天后, adddate(now(), interval 1 day) 一天后, adddate(now(), interval 1 hour) 一小时后,adddate(now(), interval 1 month ) 一月后 ;
+```
+
+
 
