@@ -75,3 +75,37 @@ select now() 当前, adddate(now(),1) 一天后, adddate(now(), interval 1 day) 
 
 
 
+### 递归`WITH RECURSIVE`
+
+```mysql
+ -- 查询子节点  含自己
+ WITH RECURSIVE DATA_ZONE_TREE (id, pid, deep, name, pinyin_prefix, pinyin, ext_id, ext_name) AS
+      (
+         SELECT T1.id, T1.pid, T1.deep, T1.name, T1.pinyin_prefix, T1.pinyin, T1.ext_id, T1.ext_name
+         from DATA_ZONE T1
+         where T1.ID = '341122'
+         UNION ALL
+         SELECT T2.id, T2.pid, T2.deep, T2.name, T2.pinyin_prefix, T2.pinyin, T2.ext_id, T2.ext_name
+         from DATA_ZONE T2, DATA_ZONE_TREE T3
+         WHERE T2.pid = T3.id
+       )
+SELECT T.* FROM DATA_ZONE_TREE T ;
+```
+
+### 行转列`group_concat`
+
+```mysql
+WITH RECURSIVE DATA_ZONE_TREE (id, pid, deep, name, pinyin_prefix, pinyin, ext_id, ext_name) AS
+       (
+         SELECT T1.id, T1.pid, T1.deep, T1.name, T1.pinyin_prefix, T1.pinyin, T1.ext_id, T1.ext_name
+         from DATA_ZONE T1
+         where T1.ID = '341122'
+         UNION ALL
+         SELECT T2.id, T2.pid, T2.deep, T2.name, T2.pinyin_prefix, T2.pinyin, T2.ext_id, T2.ext_name
+         from DATA_ZONE T2, DATA_ZONE_TREE T3
+         WHERE T2.id = T3.pid
+       )
+select group_concat(ext_name order by deep separator '') INTO returnValue
+from ( SELECT distinct ext_name , max(deep) deep FROM DATA_ZONE_TREE T group by ext_name order by deep ) RS order by deep;
+```
+
