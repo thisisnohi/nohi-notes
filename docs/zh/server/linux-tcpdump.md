@@ -776,7 +776,7 @@ $ ssh root@remotesystem 'tcpdump -s0 -c 1000 -nn -w - port 53' | /Applications/W
 
 
 
-
+## 常用命令集合
 
 ```
 # 抓取所有包，写到文件result.cap
@@ -814,6 +814,11 @@ tcpdump udp  -i eth0 -vnn
 port 80 : 这是一个常见的端口过滤器，表示仅抓取 80 端口上的流量，通常是 HTTP。
 
 -S: 序列号使用绝对数值，不指定-S的话，序列号会使用相对的数值(与seq、ack数值相关)
+
+tcpdump -XnnS -s200 port 8888 and host 10.0.0.8
+-- 搜索包含aaa或者User_agent的内容，egrep -i10 可以打印搜索内容上下10行的内容
+tcpdump -nnvvA port 8888 and host 10.0.0.8 | egrep -i "aaa|User_Agent"
+
 ```
 
 
@@ -836,6 +841,108 @@ port 80 : 这是一个常见的端口过滤器，表示仅抓取 80 端口上的
   4. PSH：简写为`P`，推送标志位，表示该数据包被对方接收后应立即交给上层应用，而不在缓冲区排队；
   5. RST：简写为`R`，重置标志位，用于连接复位、拒绝错误和非法的数据包；
   6. URG：简写为`U`，紧急标志位，表示数据包的紧急指针域有效，用来保证连接不被阻断，并督促中间设备尽快处理；
+
+  
+
+## WireShark
+
+> :point_right:[超详细的 Wireshark 使用教程](https://zhuanlan.zhihu.com/p/631821119)
+>
+> :notebook: [[抓包工具Wireshark使用教程](https://www.cnblogs.com/zichliang/p/17477251.html)](https://www.cnblogs.com/zichliang/p/17477251.html)
+
+
+
+### 过滤器
+
+#### 抓包过滤器语法和实例
+
+> 抓包过滤器类型Type（host、net、port）、方向Dir（src、dst）、协议Proto（ether、ip、tcp、udp、http、icmp、ftp等）、逻辑运算符（&&与、|| 或、！非）
+
+* 协议过滤
+
+  ```
+  比较简单，直接在抓包过滤框中直接输入协议名即可。
+  ​	tcp，只显示TCP协议的数据包列表
+  ​	http，只查看HTTP协议的数据包列表
+  ​	icmp，只显示ICMP协议的数据包列表
+  ```
+
+* IP过滤
+
+  ```
+  host 192.168.1.104
+  ​	src host 192.168.1.104
+  ​	dst host 192.168.1.104
+  ```
+
+* 端口过滤
+
+  ```
+  port 80
+  src port 80
+  dst port 80
+  ```
+
+* 逻辑运算符&&与、|| 或、！非
+
+  ```
+  src host 192.168.1.104 &&dst port 80 抓取主机地址为192.168.1.80、目的端口为80的数据包
+  host 192.168.1.104 || host 192.168.1.102 抓取主机为192.168.1.104或者192.168.1.102的数据包
+  ！broadcast 不抓取广播数据包
+  ```
+
+#### 显示过滤器语法和实例
+
+* 比较操作符
+
+  ```
+  == 等于、！= 不等于、> 大于、< 小于、>= 大于等于、<=小于等于
+  ```
+
+* 协议过滤
+
+  ```
+  比较简单，直接在Filter框中直接输入协议名即可。注意：协议名称需要输入小写。
+  tcp，只显示TCP协议的数据包列表
+  http，只查看HTTP协议的数据包列表
+  icmp，只显示ICMP协议的数据包列表
+  ```
+
+* ip过滤
+
+  ```
+  ip.src ==112.53.42.42 显示源地址为112.53.42.42的数据包列表
+  ip.dst==112.53.42.42, 显示目标地址为112.53.42.42的数据包列表
+  ip.addr == 112.53.42.42 显示源IP地址或目标IP地址为112.53.42.42的数据包列表
+  ```
+
+* 端口过滤
+
+  ```
+  tcp.port ==80, 显示源主机或者目的主机端口为80的数据包列表。
+  tcp.srcport == 80, 只显示TCP协议的源主机端口为80的数据包列表。
+  tcp.dstport == 80，只显示TCP协议的目的主机端口为80的数据包列表。
+  ```
+
+* http模式过滤
+
+  ```
+  http.request.method=="GET", 只显示HTTP GET方法的。
+  ```
+
+* 逻辑运算符为 and/or/not
+
+  ```
+  过滤多个条件组合时，使用and/or。比如获取IP地址为192.168.0.104的ICMP数据包表达式为ip.addr == 192.168.0.104 and icmp
+  ```
+
+* 按照数据包内容过滤
+
+  ```
+  data contains "abcd"
+  -- http 请求体是这样，上面的data是否在icmp才有效，未验证
+  http.file_data contains "authTmeSpan"
+  ```
 
   
 

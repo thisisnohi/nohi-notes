@@ -3,6 +3,7 @@ export const serverItems = [
     text: '服务器',
     children: [
       '/zh/server/linux.md',
+      '/zh/server/linux-tcpdump.md',
       '/zh/server/vim.md',
       '/zh/server/gen10+安装配置.md',
     ],
