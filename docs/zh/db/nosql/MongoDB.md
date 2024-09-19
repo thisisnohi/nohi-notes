@@ -6,11 +6,21 @@
 
 
 
-文档数据库
+## 文档数据库
+
+MongoDB 中的记录是一个文档，它是由字段和值对组成的数据结构。MongoDB 文档类似于 JSON 对象。字段值可以包含其他文档、数组和文档数组。
+
+![A MongoDB document.](/Users/nohi/work/workspaces-nohi/nohi-notes/docs/zh/db/imgs/mongodb/crud-annotated-document.bakedsvg.svg)
+
+使用文档的优点是：
+
+- 文档对应于许多编程语言中的原生数据类型。
+- 嵌入式文档和数组可以减少成本高昂的的连接操作。
+- 动态模式支持流畅的多态性。
+
+### 集合/视图/按需物化视图
 
 
-
-## 简介
 
 MongoDB是一款为web应用程序和互联网基础设施设计的数据库管理系统。没错MongoDB就是数据库，是NoSQL类型的数据库
 
@@ -47,49 +57,40 @@ MongoDB是一款为web应用程序和互联网基础设施设计的数据库管�
 - transaction 事务，从 MongoDB 4.0 版本开始，提供了对于事务的支持
 - aggregation 聚合，MongoDB 提供了强大的聚合计算框架，group by 是其中的一类聚合操作。
 
-## 安装
+## Mongosh
 
-> 参考：https://zhuanlan.zhihu.com/p/610560696
+MongoDB Shell 是 MongoDB 提供的官方交互式界面，允许用户与 MongoDB 数据库进行交互、执行命令和操作数据库。
 
-* 拉取最新镜像
+MongoDB Shell 是基于 JavaScript 的，允许用户直接在命令行或者脚本中使用 JavaScript 语言来操作 MongoDB 数据库。
 
-  ```shell
-  # 搜索可用镜像
-  docker search mongo
-  # 拉取最新镜像
-  docker pull mongo:latest
-  ```
+### 命令
 
-* 运行一个MongoDB窗口
+```shell
+-- 查看版本
+mongosh --version
+-- 连接本地：默认使用端口27017
+mongosh
+mongosh --host <hostname>:<port>
+-- 使用用户身份登录
+mongosh --host <hostname> --port <port> -u "testuser" -p "password123" --authenticationDatabase "<database_name>"
+```
 
-  ```shell 
-  docker run -itd --name mongo-test -p 27017:27017 mongo --auth
-  ```
+### **执行基本操作：**
 
-  **参数说明：**
+连接成功后，可以执行各种 MongoDB 数据库操作。例如：
 
-  - **-itd：**其中，i是交互式操作，t是一个终端，d指的是在后台运行。
-  - **--name mongo-test：**容器名称
-  - **-p 27017:27017** ：映射容器服务的 27017 端口到宿主机的 27017 端口。外部可以直接通过 宿主机 ip:27017 访问到 mongo 的服务。
-  - **--auth**：需要密码才能访问容器服务（注意：安全问题，MongoDB默认是不开启权限验证的，不过设置了这里就相当于修改MongoDB的配置auth=ture启用权限访问）。
+- 查看当前数据库：`db`
+- 显示数据库列表：`show dbs`
+- 切换到指定数据库：`use <database_name>`
+- 执行查询操作：`db.<collection_name>.find()`
+- 插入文档：`db.<collection_name>.insertOne({ ... })`
+- 更新文档：`db.<collection_name>.updateOne({ ... })`
+- 删除文档：`db.<collection_name>.deleteOne({ ... })`
+- 退出 MongoDB Shell：`quit()` 或者 `exit`
 
-* 进入创建的MongoDB容器
 
-  ```
-  docker exec -it mongo-test mongosh
-  ```
 
-  * 在admin数据库中通过创建一个用户，赋予用户root权限
-
-    ```
-    # 进入admin数据库 use admin 
-    # 创建一个超级用户 db.createUser({ user:"root", pwd:"123456", roles:[{role:"root",db:"admin"}] } );
-    
-    #授权登录
-    db.auth('root','123456')
-    ```
-
-### 用户权限管理
+## 用户权限管理
 
 #### **MongoDB添加用户命令说明**
 
@@ -125,10 +126,36 @@ db.createUser({ user:"root", pwd:"123456",
 #### 创建一个业务数据用户
 
 > 只允许访问特定数据库
+>
+> 数据库在操作过程中，会自动创建
+>
+> use demodb
+>
+> -- 插入数据后自动创建demodb
+>
+> db.runoob.insertOne({"name":"菜鸟教程"})
+>
+> 然后在库：demodb下创建用户，此用户才能在demodb下使用、操作demodb
 
 ```shell 
 db.createUser({ user:"demouser", pwd:"123456", 
 	roles:[{role:"readWrite",db:"demodb"},{role:"dbAdmin",db:"demodb"}] });
+```
+
+#### 验证用户
+
+```shell
+db.auth("demouser", "demouser")
+
+-- 启用身份验证 mongod.conf添加
+security:
+  authorization: "enabled"
+```
+
+#### 删除用户
+
+```shell
+db.dropUser("demouser")
 ```
 
 
@@ -145,7 +172,7 @@ db.createUser({ user:"demouser", pwd:"123456",
 
 #### **MongoDB中的role详解**
 
-- Read：允许用户读取指定数据库
+- read：允许用户读取指定数据库
 - readWrite：允许用户读写指定数据库
 - dbAdmin：允许用户在指定数据库中执行管理函数，如索引创建、删除，查看统计或访问system.profile
 - userAdmin：允许用户向system.users集合写入，可以在指定数据库里创建、删除和管理用户
