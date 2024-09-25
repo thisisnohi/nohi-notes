@@ -12,6 +12,12 @@
 
 * [python+fastapi+vue3](https://gitee.com/ktianc/kinit)
 
+  * 运行过程中发现很多不会的点，简单熟悉下
+  * FastApi
+  * Typer
+  * SQLAlchemy
+
+
 
 
 ## FastApi
@@ -256,6 +262,209 @@ if __name__ == "__main__":
 ## SQLAlchemy
 
 > SQLAlchemy 是一个功能强大的Python ORM 工具包
+>
+> 参考：`https://docs.sqlalchemy.org.cn/en/20/`
+
+
+
+### Hello World
+
+> 直接查询数据库表（不仅仅是此功能）
+
+```python
+from sqlalchemy import create_engine, text
+
+# 创建数据库引擎
+engine = create_engine("mysql+pymysql://root:root1234@127.0.0.1:3306/nohi?charset=utf8")
+
+# 获取连接
+with engine.connect() as conn:
+    # 查询数据库中t_user表
+    sql = "select id, name from t_user"
+    # 执行语句
+    result = conn.execute(text(sql))
+    print(result.all())
+
+# [(1, 'admin'), (2, 'user_1')]
+```
+
+* 模块安装
+
+  ```shell
+  pip3 install sqlalchemy==2.0.19
+  pip3 install pymysql==1.1.0
+  -- 注意版本号，如果不指定，程序可能有问题
+  ```
+
+
+
+### 重点说明
+
+#### engine同步与异步
+
+```
+根据驱动不同，创建engine方法不同
+pymysql同步驱动，对应create_engine
+asyncmy异步驱动，对应create_async_engine
+```
+
+```python
+# 异步驱动及demo
+import asyncio
+
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import create_async_engine
+
+# 创建数据库引擎
+# echo=True 参数表示连接发出的 SQL 将被记录到标准输出。
+# asyncmy 为异步连接驱动
+engine = create_async_engine('mysql+asyncmy://root:root1234@127.0.0.1:3306/nohi', echo=True)
+
+async def main() :
+    async with engine.connect() as conn:
+        sql = "select id, name from t_user"
+        result = await conn.execute(text(sql))
+        print(result.all())
+
+asyncio.run(main())
+```
+
+#### engine.begin与engin.connect
+
+* engin.connect 默认不开启事务，可以手工提交事务
+
+  ```python
+  async with engine.connect() as conn:
+    # REPEATABLE READ
+    print("===> engine.begin() get_isolation_level ", await conn.get_isolation_level())
+    sql = "INSERT INTO demo_parent (id, data) VALUES (3, '测试事务connect_with_commit')"
+    result = await conn.execute(text(sql))
+    print("===> insert", result)
+  
+    # 提交事务
+    await conn.commit()
+  ```
+
+* engine.begin 默认就开启事务
+
+  ```python
+   # 测试事务
+   # connection.commit 提交事务
+   async with engine.begin() as conn:
+      # REPEATABLE READ
+      print("===> engine.begin() get_isolation_level ", await conn.get_isolation_level())
+      sql = "INSERT INTO demo_parent (id, data) VALUES (4, '测试事务 begin_with_commit')"
+      result = await conn.execute(text(sql))
+      print("===> insert", result)
+  ```
+
+  
+
+### ORM
+
+> 代码见：https://github.com/thisisnohi/python-2024    test_user.py
+
+* model[User] 节选
+
+  ```python
+  
+  @dataclass
+  class User(Base):
+      __tablename__ = "t_user"
+  
+      id: Mapped[int] = mapped_column(Integer, primary_key=True, comment='主键ID')
+      create_datetime: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), comment='创建时间')
+      update_datetime: Mapped[datetime] = mapped_column(
+          DateTime,
+          server_default=func.now(),
+          onupdate=func.now(),
+          comment='更新时间'
+      )
+      delete_datetime: Mapped[datetime] = mapped_column(DateTime, nullable=True, comment='删除时间')
+      is_delete: Mapped[bool] = mapped_column(Boolean, default=False, comment="是否软删除")
+  
+      user_code: Mapped[str] = mapped_column(String(11), nullable=False, index=True, comment="用户编号", unique=False)
+      name: Mapped[str] = mapped_column(String(50), index=True, nullable=False, comment="姓名")
+      telephone: Mapped[str] = mapped_column(String(11), nullable=False, index=True, comment="手机号", unique=False)
+  ...
+
+* 操作
+
+  ```python
+  import asyncio
+  
+  from sqlalchemy import delete, select, text
+  from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+  from sqlalchemy.orm import sessionmaker
+  
+  from quickstart.model.User import User
+  
+  # 创建数据库引擎
+  # echo=True 参数表示连接发出的 SQL 将被记录到标准输出。
+  # asyncmy 为异步连接驱动
+  engine = create_async_engine(
+      'mysql+asyncmy://root:root1234@127.0.0.1:3306/nohi',
+      echo=True,
+      future=True,
+      pool_size=10,
+      max_overflow=5,
+      pool_timeout=5,
+      pool_pre_ping=True,
+  )
+  
+  # 同步session
+  # Session = sessionmaker(engine)
+  # 异步session
+  Session = sessionmaker(bind=engine,class_=AsyncSession)
+  
+  #
+  user = User()
+  
+  async def init():
+      await asyncio.sleep(1)
+      # 初始化表结构
+      # Base.metadata.create_all(engine)
+  
+      # 清理数据
+      # 删除 11数据
+      async with Session() as session:
+          async with session.begin():
+              await session.execute(delete(User).where(User.id == 11))
+              await session.execute(text("delete from t_user where id in (12, 13)"))
+  
+  
+      # 初始化数据
+      async with Session() as session:
+          async with session.begin():
+              session.add(User(id=11, user_code='1001', name='NOHI', telephone='18012920403', email='thisnohi@163.com', remark='11'))
+  
+              user1 = User(id=12, user_code='1001', name='NOHI', telephone='18012920403', email='thisnohi@163.com',
+                           remark='11')
+              user2 = User(id=13, user_code='1002', name='NOHI', telephone='18012920403', email='thisnohi@163.com',
+                           remark='11')
+              session.add_all([user1, user2])
+  
+          sql = select(User).where(User.id.in_([11,12,13]))
+          print("===> sql:", sql)
+          result = await session.execute(sql)
+          # print(result.all())
+          # 必须使用 result.unique() ，否则报错：
+          # sqlalchemy.exc.InvalidRequestError: The unique() method must be invoked on this Result, as it contains results that include joined eager loads against collections
+          for row in result.unique().all():
+              print(row)
+  
+  async def user_model():
+      print('===>user_model')
+      await init()
+  
+  asyncio.run(user_model())
+  ```
+
+  
+
+
+
+
 
 
 
