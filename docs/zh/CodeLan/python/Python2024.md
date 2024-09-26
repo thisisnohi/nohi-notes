@@ -60,7 +60,10 @@ pip install "uvicorn[standard]"
   swagger-ui: http://127.0.0.1:8000/docs
   ```
   
-  
+
+### 路径依赖项Depends
+
+
 
 ## Typer
 
