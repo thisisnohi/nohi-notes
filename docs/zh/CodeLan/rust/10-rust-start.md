@@ -46,7 +46,10 @@
 
 
 
-### 设置 Rustup 镜像
+### struct、trait
+
+* struct: 类似结构体，定义类、属性 
+* trait: 类似接口，定义方法
 
 
 
@@ -419,7 +422,7 @@ println!("User1: {}", user1);
 let user2 = build_user("thisisnohi".to_string(), "thisisnohi@163.com".to_string());
 println!("User2: {}", user2);
 
-// 通过忆存在变量初始化，username使用单独的初始化
+// 通过已存在变量初始化，username使用单独的初始化
 let user3 = User {
   username: "nohi".to_string(),
   ..user2
@@ -502,9 +505,7 @@ impl Rectangle {
 }
 ```
 
-```
 
-```
 
 
 
