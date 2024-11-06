@@ -84,3 +84,30 @@ Yew通过编译到WebAssembly (Wasm) 的方式，使得Rust代码能够在浏览
 
 > 5 个优秀的 Rust 开源项目推荐https://zhuanlan.zhihu.com/p/650681240
 
+
+
+### 日志
+
+> 参考：`https://juejin.cn/post/7325317637075664932`
+
+`log`为官方库，其为日志门面定义，并非具体日志实现框架，需要配合日志实现框架一起使用，如“env_logger”
+
+```
+/// 第一步： 引入依赖
+///     log = "0.4.22"
+///     env_logger = "0.11.5"
+/// 第二步： 初始化
+///     env_logger::init();
+/// 第三步： 环境变量添加日志级别：RUST_LOG=debug
+///    set_var("RUST_LOG", "debug");
+use env_logger::{Logger, Env};
+
+// 或者使用下面方式，手工设置环境变量
+let env = Env::new()
+// filters out any messages that aren't at "info" log level or above
+ .filter_or("MY_LOG", "info")
+// always use styles when printing
+ .write_style_or("MY_LOG_STYLE", "always");
+
+let logger = Logger::from_env(env);
+```
