@@ -70,6 +70,16 @@ https://cloud.tencent.com/developer/article/2411429
 
   ```
   https://zhuanlan.zhihu.com/p/694422278
+  
+  基于 WebUI 部署 Ollama 可视化对话界面
+  Ollama自带控制台对话界面体验总归是不太好，接下来部署 Web 可视化聊天界面：
+  
+  下载并安装 Node.js 工具：https://nodejs.org/zh-cn
+  下载ollama-webui工程代码：git clone https://github.com/ollama-webui/ollama-webui-lite ollama-webui
+  切换ollama-webui代码的目录：cd ollama-webui
+  设置 Node.js 工具包镜像源（下载提速）：npm config set registry http://mirrors.cloud.tencent.com/npm/
+  安装 Node.js 依赖的工具包：npm install
+  最后，启动 Web 可视化界面：npm run dev
   ```
-
+  
   

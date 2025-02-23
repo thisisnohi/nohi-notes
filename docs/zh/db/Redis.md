@@ -17,6 +17,16 @@
   brew services stop redis
   -- 查看redis信息
   brew services info redis
+  
+  # 直接启动
+  redis-server
+  
+  # 带配置文件启动
+  redis-server ./redis.conf 
+  
+  # 带配置文件启动 且指定某几个配置 配置名称前加 --   daemonize 后台启动
+  redis-server --daemonize yes
+  redis-server ./redis.conf --daemonize yes --port 1123
   ```
 
 * 操作
@@ -29,11 +39,14 @@
     -- 连接
     redis-cli
     
+    可以指定 ip port
+    redis-cli -h 127.0.0.1 -p 6379
+    
     -- 认证
     auth "123456"
     
     ```
-
+    
     
 
 
@@ -103,3 +116,31 @@ zrevrange <key> <start> <stop>  # 获取有序集合指定范围的元素（按�
 zrangebyscore <key> <min> <max>  # 获取有序集合指定分数范围的元素
 ```
 
+
+
+## 集群
+
+> 参见：[详解Redis三大集群模式，轻松实现高可用!](https://www.cnblogs.com/yidengjiagou/p/17345831.html)
+
+
+
+## 锁
+
+> [已废弃 RedLock](https://xie.infoq.cn/article/159756c5338c93a54687d8e75)
+
+
+
+* RedLock 主要存在以下两个问题：
+
+```
+性能问题：RedLock 要等待大多数节点返回之后，才能加锁成功，而这个过程中可能会因为网络问题，或节点超时的问题，影响加锁的性能。
+并发安全性问题：当客户端加锁时，如果遇到 GC 可能会导致加锁失效，但 GC 后误认为加锁成功的安全事故，例如以下流程：
+客户端 A 请求 3 个节点进行加锁。
+在节点回复处理之前，客户端 A 进入 GC 阶段（存在 STW，全局停顿）。
+之后因为加锁时间的原因，锁已经失效了。
+客户端 B 请求加锁（和客户端 A 是同一把锁），加锁成功。
+客户端 A GC 完成，继续处理前面节点的消息，误以为加锁成功。
+此时客户端 B 和客户端 A 同时加锁成功，出现并发安全性问题。
+```
+
+因为 RedLock 存在的问题争议较大，且没有完美的解决方案，所以 Redisson 中已经废弃了 RedLock，这一点在 Redisson 官方文档中能找到。
