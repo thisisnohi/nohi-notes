@@ -46,5 +46,53 @@
   }
   ```
 
+## 常见问题
 
+* mock初始化不在BeforeAll中
 
+```
+在@BeforeAll注释方法中使用JUnit 5测试运行时，Mockito不会初始化mock
+```
+
+* `@ExtendWith`
+
+  ```
+  Spring环境：使用Spring测试框架功能（例如）@MockBean，则必须使用@ExtendWith(SpringExtension.class)。它取代了不推荐使用的JUnit4@RunWith(SpringJUnit4ClassRunner.class)
+  
+  非Spring环境：
+  Mockito而不涉及Spring，只使用@Mock/@InjectMocks批注时，使用@ExtendWith(MockitoExtension.class)，它不会加载到很多不需要的Spring东西中。它替换了不推荐使用的JUnit4 @RunWith(MockitoJUnitRunner.class)。
+  
+  // 以下为手写未在编辑器中编译，可能出现语法错误
+  @ExtendWith(MockitoExtension.class)
+  public class XxxxTest{
+     @Mock
+     XxxService  innerService;
+     
+     @InjectMocks
+     XxxService  needTestService;
+     
+     @Test
+     public void testServer() {
+     		Mockito.when(innerService.getAcctName(Mockito.any())
+     		    .thenReturn(returnvalue...));   		    
+     		// 测试访求    
+     		Assertions.assertXXXX(needTestService.validatorAcctName("1","2"))
+     }
+  }
+  ```
+
+  * 加载Spring环境，适合集成测试
+  * 不加载Spring环境，适合单元测试
+
+* 返回值`void`方法的mock
+
+  * 用处，模拟异常/或者不做任何事情
+
+  ```
+  List<String> spy = spy(names);
+  Mockito.doNothing().when(spy).add(anyInt(), anyString());
+  // 抛异常
+  doThrow(new DataAccessException()).when(spy).add(anyInt());
+  ```
+
+  

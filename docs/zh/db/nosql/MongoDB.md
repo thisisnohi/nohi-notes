@@ -82,6 +82,7 @@ mongosh --host <hostname> --port <port> -u "testuser" -p "password123" --authent
 - 查看当前数据库：`db`
 - 显示数据库列表：`show dbs`
 - 切换到指定数据库：`use <database_name>`
+- 显示集合(类似表)列表：`show collections`
 - 执行查询操作：`db.<collection_name>.find()`
 - 插入文档：`db.<collection_name>.insertOne({ ... })`
 - 更新文档：`db.<collection_name>.updateOne({ ... })`
