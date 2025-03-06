@@ -27,7 +27,7 @@ openssl x509 -inform der -in xxx.cer -out xxx.pem
 
 ```shell script
 openssl pkcs12 -in 503.pfx -nocerts -nodes -out private_pc.key
-需要输入密码: jsccb188
+需要输入密码: xxxxx
 ```
 
 3、从密钥对中提取私钥(头部格式：-----BEGIN RSA PUBLIC KEY-----）
