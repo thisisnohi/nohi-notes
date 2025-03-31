@@ -2,6 +2,8 @@
 
 > create by nohi 20230626
 >
+> `validata`  `Valid`
+>
 > 参考：nohi-web-native
 
 
@@ -85,6 +87,8 @@ public class HelloReq {
 
 `Validator..validate(req)`
 
+`Validation.buildDefaultValidatorFactory().getValidator()`
+
 ```java
 public class Knife4jService {
     @Autowired
@@ -94,6 +98,7 @@ public class Knife4jService {
     public HelloResp sayHello3(@Valid HelloReq req) {
         log.info("请求对象:{}", JSONObject.toJSONString(req));
         /** 校验 **/
+        // Validation.buildDefaultValidatorFactory().getValidator().valiate(req)
         Set<ConstraintViolation<HelloReq>> violations = validator.validate(req);
 
         /** 构建返回对象 **/

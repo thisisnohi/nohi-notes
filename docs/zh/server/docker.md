@@ -212,3 +212,21 @@ sidebar: auto
 	功能不够强大。
 	容器创建后，无法通过后台增加端口。
 
+
+
+# docker compose
+
+> [docker compose 配置文件 .yml 全面指南](https://zhuanlan.zhihu.com/p/387840381)
+
+基本步骤：
+
+1. 使用 [Dockerfile](https://zhida.zhihu.com/search?content_id=174317214&content_type=Article&match_order=1&q=Dockerfile&zhida_source=entity) 定义您的应用程序的环境
+2. 使用 docker-compose.yml 定义组成您的应用程序的服务
+3. 运行`docker compose up`启动并运行程序
+
+优点
+
+1. 在单个主机上建立多个隔离环境
+2. 创建容器时保留卷数据
+3. 仅重新创建已更改的容器，当您重新启动未更改的服务时，Compose 会使用现有容器。
+4. 变量在环境之间组合重复使用

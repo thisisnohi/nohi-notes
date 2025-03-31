@@ -145,7 +145,74 @@ profiles节点下配置多个profile，而且配置之后要激活
 
 
 
+## 父子工程
 
+### 版本依赖、切换版本
+
+maven项目中，父子工程版本号切换、子工程间版本依赖。除了手工修改，还可以使用项目版本号、变量替换。
+
+#### 工程结构
+
+```xml
+Project-parent
+|-- pom.xml
+|-- Project-One
+|---- pom.xml   (project-one依赖project-two)
+|-- Project-Two
+|---- pom.xml
+
+parent -> pom.xml
+<groupId>nohi.online</groupId>
+<artifactId>VersionProject</artifactId>
+<version>${reversion}</version>
+<packaging>pom</packaging>
+
+<modules>
+	<module>Project-One</module>
+	<module>Project-Two</module>
+</modules>
+
+<dependencyManagement>
+  <dependencies>
+  	<dependency>
+    	<groupId>nohi.online</groupId>
+      <artifactId>Project-One</artifactId>
+      <version>${project.version}</version>
+      -- project.version 会与 ${reversion} 版本号保持一致
+    </dependency>
+    <dependency>
+    	<groupId>nohi.online</groupId>
+      <artifactId>Project-Two</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+</dependencyManagement>
+
+Project-One -> pom.xml (依赖project-two)
+-- 1.子工程使用${reversion} 版本号与父工程保持一至
+-- 2.子工程依赖其他子工程，使用父工程的dependencyManagement控制依赖版本号
+<parent>
+	<groupId>nohi.online</groupId>
+  <artifactId>VersionProject</artifactId>
+  <version>${reversion}</version>
+</parent>
+<dependencies>
+  <dependency>
+    <groupId>nohi.online</groupId>
+    <artifactId>Project-Two</artifactId>
+  </dependency>
+</dependencies>
+
+```
+
+* maven打包
+
+  ```
+  mvn version:set -DnewVersion=1.2.3
+  mvn clean -Dreversion=1.2.3 -DskipTests=true package
+  ```
+
+  
 
 
 
