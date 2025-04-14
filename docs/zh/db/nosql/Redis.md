@@ -45,6 +45,10 @@
     -- 认证
     auth "123456"
     
+    -- 停止
+    redis-cli shutdown
+    -- 带密码关闭
+    ./redis-cli -a 123456 shutdown
     ```
     
     
