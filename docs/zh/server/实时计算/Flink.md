@@ -68,9 +68,17 @@ docker compose build
 docker compose up -d
 ```
 
+* 修改镜像
+
+  ```
+  # docker-compose.yml 修改FLINK为2.0版本
+  image: apache/flink-table-walkthrough:1-FLINK-2.0-scala_2.12
+  ```
+
 * `docker compose build` 慢的问题
 
   ```
+  # Dockerfile
   -- 修改maven仓库地址
   COPY ./settings.xml /usr/share/maven/conf
   ```
