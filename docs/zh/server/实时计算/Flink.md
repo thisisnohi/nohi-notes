@@ -83,4 +83,22 @@ docker compose up -d
   COPY ./settings.xml /usr/share/maven/conf
   ```
 
-  
+### Flink集群
+
+一个Flink集群总是包含一个`JobManager`以及一个或多个`Flink TaskManager`
+
+`JobManager` 负责处理 [Job](https://nightlies.apache.org/flink/flink-docs-release-2.0/zh/docs/concepts/glossary/#flink-job) 提交、 Job 监控以及资源管理。`Flink TaskManager `运行 worker 进程， 负责实际任务 [Tasks](https://nightlies.apache.org/flink/flink-docs-release-2.0/zh/docs/concepts/glossary/#task) 的执行，而这些任务共同组成了一个 `Flink Job`。
+
+
+
+**代码说明**
+
+```
+-- fork了官方源码
+https://github.com/thisisnohi/flink-playgrounds.git
+-- 分支：flink-mvn 增加了maven国内镜像的修改，使编译更快, volumn使用了本地磁盘
+-- 分支：flink2-test，使用FLINK2.0(源码中使用了Flink1.6)
+```
+
+
+
