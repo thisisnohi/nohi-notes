@@ -148,3 +148,95 @@ zrangebyscore <key> <min> <max>  # 获取有序集合指定分数范围的元素
 ```
 
 因为 RedLock 存在的问题争议较大，且没有完美的解决方案，所以 Redisson 中已经废弃了 RedLock，这一点在 Redisson 官方文档中能找到。
+
+
+
+## 发布订阅
+
+### 订阅者/接收消息
+
+```
+127.0.0.1:6379(subscribed mode)> subscribe bbx
+1) "subscribe"
+2) "bbx"
+3) (integer) 1
+```
+
+### 发布者/发布消息
+
+```
+127.0.0.1:6379> PUBLISH bbx hello1
+(integer) 1
+
+接收者会收到消息
+127.0.0.1:6379(subscribed mode)> subscribe bbx
+1) "subscribe"
+2) "bbx"
+3) (integer) 1
+1) "message"
+2) "bbx"
+3) "hello1"
+```
+
+`RedisTemplate` 代码`demo`   :point_down:
+
+```java
+git: https://github.com/thisisnohi/SpringCloud2022.git 
+分支： feature-demo
+代码路径： test/java/nohi/redis/pubsub/TestRedisTemplatePub.java
+
+@DisplayName("定时发布消息,TOPIC_ONE/TOPIC_TWO")
+    @Test
+    @Order(1)
+    public void 发布消息() throws InterruptedException {
+        int index = 0;
+        while (true) {
+            index++;
+            // 创建消息
+            MessageVo msg = MessageVo.builder().id("TOP1" + index).title(TOPIC_ONE).content(DateUtil.now() + " " + index).build();
+             template.convertAndSend(TOPIC_ONE, msg);
+
+            if (index % 2 == 0) {
+                log.info("===>TOP2");
+                msg = MessageVo.builder().id("TOP2" + index).title(TOPIC_TWO).content(DateUtil.now() + " " + index).build();
+                template.convertAndSend(TOPIC_TWO, msg);
+            }
+            log.info("消息[{}] 发布", index);
+            TimeUnit.SECONDS.sleep(1);
+        }
+    }
+
+    @DisplayName("订阅消息")
+    @Test
+    @Order(2)
+    public void 订阅消息() throws InterruptedException {
+        RedisMessageListener listener = new RedisMessageListener(template);
+
+        PrintMessageReceiver receiver = new PrintMessageReceiver();
+        MessageListenerAdapter adapter = new MessageListenerAdapter(receiver);
+        adapter.setDefaultListenerMethod("handleMessage"); // 明确指定方法名
+        adapter.setSerializer(RedisSerializer.json());
+        /** adapter必须增加afterPropertiesSet方法调用 **/
+        adapter.afterPropertiesSet();
+
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        // 监听所有库的key过期事件
+        container.setConnectionFactory(lcf);
+        // 所有的订阅消息，都需要在这里进行注册绑定,new PatternTopic(TOPIC_NAME1)表示发布的主题信息
+        // 可以添加多个 messageListener，配置不同的通道
+        container.addMessageListener(listener, new PatternTopic(TOPIC_ONE));
+        // new PatternTopic("pattern.*") 模糊匹配
+        container.addMessageListener(adapter, new ChannelTopic(TOPIC_TWO));
+        // 可选配置
+        container.setTaskExecutor(Executors.newFixedThreadPool(4)); // 自定义线程池
+        container.setErrorHandler(e -> System.err.println("Listener error: " + e.getMessage()));
+
+        // 初始化容器
+        container.afterPropertiesSet(); // 重要！启动容器
+        container.start(); // 显式启动
+        TimeUnit.SECONDS.sleep(30);
+    }
+```
+
+
+
