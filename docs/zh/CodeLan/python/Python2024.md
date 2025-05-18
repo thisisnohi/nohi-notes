@@ -10,7 +10,7 @@
 
   项目地址: `https://gitee.com/g1879/DrissionPage`
 
-* [python+fastapi+vue3](https://gitee.com/ktianc/kinit)
+* **kinit**: [python+fastapi+vue3](https://gitee.com/ktianc/kinit)
 
   * 运行过程中发现很多不会的点，简单熟悉下
   * FastApi
