@@ -19,7 +19,7 @@
 >
 >     * k8s版本v1.18，OS：centos7.X 非最新版本
 >
->     * 中间有章节路过，如第三天教程 3.5后，缺少 pv pvc storageclass 和 helm、harbor安装
+>     * 中间有章节跳过，如第三天教程 3.5后，缺少 pv pvc storageclass 和 helm、harbor安装
 >
 >       (本着折腾的原则，本资料对应章节已做修改，并且安装完成)
 
@@ -123,7 +123,7 @@ journalctl -xeu kubelet 日志目录：/run/log/journal
 >
 > :video_camera: [视频教程](https://www.bilibili.com/video/BV1cR4y1f7Ac/?spm_id_from=333.337.search-card.all.click&vd_source=9004ce053a52d5930f71e230579961e7)
 
-* OS:  centos 8.5 
+* OS:  centos 8.5  
 
 * :happy: 安装完成
 

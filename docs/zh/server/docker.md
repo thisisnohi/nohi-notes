@@ -100,7 +100,57 @@ sidebar: auto
 * 创建镜像: 
 * 设置镜像标签:  docker tag 860c279d2fec runoob/centos:dev
 
+## 构建镜像
 
+> 创建镜像两种方式：
+>
+> 1. 从已经创建的窗口中更新镜像，并且提交这个镜像
+> 2. 使用Dcokerfile指令创建一个新的镜像
+
+### 方式1：更新镜像并提交
+
+* 更新镜像
+
+  ```shell
+  运行一个镜像后，如：docker run -t -i ubuntu:15.10 /bin/bash
+  进入容器更新系统：
+  apt-get update
+  apt-get upgrade -y
+  
+  更新完成后退出：exit
+  ```
+
+  * docker ps 查看容器id: `87fe1944a6b1` 为更新后的容器ID
+
+* 提交窗口副本
+
+  ```shell
+  docker commit -m="update" -a="nohi" 87fe1944a6b1 nohi/ubuntu:v2
+  ```
+
+### 方式2： Dockerfile
+
+* Dockerfile
+
+  ```dockerfile
+  FROM centos:6.7
+  MAINTAINER NOHI "thisisnohi@163.com"
+  
+  RUN /bin/echo 'root:123456' | chpasswd
+  RUN useradd nohi
+  RUN /bin/echo 'nohi:nohi1234' | chpasswd
+  RUN /bin/echo -e "LANG=\"zh_CN.UTF-8\"" > /etc/default/local
+  EXPOSE 22
+  EXPOSE 80
+  CMD /usr/sbin/sshd -D
+  ```
+
+* ` docker build -t runoob/centos:6.7 .`
+
+  * **-t** ：指定要创建的目标镜像名
+  * **.** ：Dockerfile 文件所在目录，可以指定Dockerfile 的绝对路径
+
+  
 
 ## Docker网络
 
@@ -122,13 +172,47 @@ sidebar: auto
 
 
 * 测试
-	*  docker run -d -p 5000:5000 --name test training/webapp python app.py
-	*   docker run -d -p 5001:5001 --name test2 --link test training/webapp python app.py
+  *  docker run -d -p 5000:5000 --name test training/webapp python app.py
+  *   docker run -d -p 5001:5001 --name test2 --link test training/webapp python app.py
 
-	* docker network create -d bridge my-bridge 创建网络
-	* docker run -d -p 5003:5003 --network my-bridge --name test3 --link test training/webapp python app.py 指定网络
-	* docker network connect my-bridge test 指定网络连接容器
+  * docker network create -d bridge my-bridge 创建网络
+  * docker run -d -p 5003:5003 --network my-bridge --name test3 --link test training/webapp python app.py 指定网络
+  * docker network connect my-bridge test 指定网络连接容器
+### 容器互联
+
+* 新建网络： 
+
+  ```shell
+  docker network create -d bridge nohi-bridge
+  ```
+
+  * **-d**：参数指定 Docker 网络类型，有 bridge、overlay。
+  * 其中 overlay 网络类型用于 Swarm mode，在本小节中你可以忽略它。
+
+* 连接容器
+
+  ```shell
+  docker run -itd --name test1 --network nohi-bridge ubuntu /bin/bash
+  docker run -itd --name test2 --network nohi-bridge nohi/ubuntu:v2 /bin/bash
+  ```
+
+### DNS
+
+* 宿主机的 /etc/docker/daemon.json 文件中增加以下内容来设置全部容器的 DNS
+
+  ```json
+  {
+    "dns" : [
+      "114.114.114.114",
+      "8.8.8.8"
+    ]
+  }
+  ```
+
+  * 当宿主机`/etc/resolv.conf`文件不为空，容器启动命令中无`resolv.conf`文件的操作时，则容器默认使用宿主机的`resolv.conf`文件的内容
+
 ### Docker的镜像和容器
+
 * docker 依赖的底层技术
 	* namespaces:访问隔离(pid,network,mnt)
 	* cgroup:资源控制
@@ -145,6 +229,63 @@ sidebar: auto
 * 资源监控
 	* docker stats id
 	* docker inspect 
+
+## Dockerfile
+
+### 指令
+
+* `COPY`
+
+  ```shell
+  COPY [--chown=<user>:<group>] <源路径1>...  <目标路径>
+  COPY [--chown=<user>:<group>] ["<源路径1>",...  "<目标路径>"]
+  ```
+
+  * `[--chown=<user>:<group>]`：可选参数，用户改变复制到容器内文件的拥有者和属组。
+  * **<源路径>**：源文件或者源目录，这里可以是通配符表达式，其通配符规则要满足 Go 的 filepath.Match 规则
+
+* `ADD`
+
+  ADD 指令和 COPY 的使用格类似（同样需求下，官方推荐使用 COPY）。功能也类似，不同之处如下：
+
+  - ADD 的优点：在执行 <源文件> 为 tar 压缩文件的话，压缩格式为 gzip, bzip2 以及 xz 的情况下，会自动复制并解压到 <目标路径>。
+  - ADD 的缺点：在不解压的前提下，无法复制 tar 压缩文件。会令镜像构建缓存失效，从而可能会令镜像构建变得比较缓慢。具体是否使用，可以根据是否需要自动解压来决定。
+
+* `CMD`
+
+  类似于 RUN 指令，用于运行程序，但二者运行的时间点不同:
+
+  - CMD 在docker run 时运行。
+  - RUN 是在 docker build。
+  - 如果 Dockerfile 中如果存在多个 CMD 指令，仅最后一个生效。
+
+* `VOLUME`
+
+  定义匿名数据卷。在启动容器时忘记挂载数据卷，会自动挂载到匿名卷。
+
+  作用：
+
+  - 避免重要的数据，因容器重启而丢失，这是非常致命的。
+  - 避免容器不断变大。
+
+* `EXPOSE`
+
+  仅仅只是声明端口。
+
+  作用：
+
+  - 帮助镜像使用者理解这个镜像服务的守护端口，以方便配置映射。
+  - 在运行时使用随机端口映射时，也就是 docker run -P 时，会自动随机映射 EXPOSE 的端口。
+
+  格式：`EXPOSE <端口1> [<端口2>...]`
+
+* `WORKDIR` 指定工作目录。用 WORKDIR 指定的工作目录，会在构建镜像的每一层中都存在。
+
+* `USER` 用于指定执行后续命令的用户和用户组，这边只是切换后续命令执行的用户（用户和用户组必须提前已经存在）。
+
+
+
+
 
 ## 管理界面
 
@@ -216,17 +357,4 @@ sidebar: auto
 
 # docker compose
 
-> [docker compose 配置文件 .yml 全面指南](https://zhuanlan.zhihu.com/p/387840381)
-
-基本步骤：
-
-1. 使用 [Dockerfile](https://zhida.zhihu.com/search?content_id=174317214&content_type=Article&match_order=1&q=Dockerfile&zhida_source=entity) 定义您的应用程序的环境
-2. 使用 docker-compose.yml 定义组成您的应用程序的服务
-3. 运行`docker compose up`启动并运行程序
-
-优点
-
-1. 在单个主机上建立多个隔离环境
-2. 创建容器时保留卷数据
-3. 仅重新创建已更改的容器，当您重新启动未更改的服务时，Compose 会使用现有容器。
-4. 变量在环境之间组合重复使用
+> 见：《docker-compose.md》
