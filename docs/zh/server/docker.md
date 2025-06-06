@@ -358,3 +358,10 @@ sidebar: auto
 # docker compose
 
 > 见：《docker-compose.md》
+
+```
+pip 安装慢;
+pip config set global.index-url https://mirrors.aliyun.com/pypi/simple 
+pip config set install.trusted-host mirrors.aliyun.com
+```
+
