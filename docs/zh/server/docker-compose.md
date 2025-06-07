@@ -1,6 +1,10 @@
 # docker-compose
 
 > create by nohi 20250426
+>
+> 参考1：菜鸟教程
+>
+> 参考2：https://bingohuang.gitbooks.io/docker_practice/content/compose/usage.html
 
 ## Compose 简介
 
@@ -114,3 +118,17 @@ volumes:
       device: /tmp/  # 指定主机路径
 ```
 
+
+
+## 命令
+
+### 命令对象与格式
+
+```sh
+docker-compose [-f=<arg>...] [options] [COMMAND] [ARGS...]
+```
+
+### 选项
+
+* `-f, --file FILE`指定使用的Compose模板文件，默认为docker-compose.yml。
+* `-p, --project-name NAME` 指定项目名称，默认使用所有目录名称
