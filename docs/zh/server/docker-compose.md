@@ -132,3 +132,38 @@ docker-compose [-f=<arg>...] [options] [COMMAND] [ARGS...]
 
 * `-f, --file FILE`指定使用的Compose模板文件，默认为docker-compose.yml。
 * `-p, --project-name NAME` 指定项目名称，默认使用所有目录名称
+
+## Compose模板文件
+
+> https://bingohuang.gitbooks.io/docker_practice/content/compose/yaml_file.html
+
+1.0 时顶级元素为服务名称，次级元素为服务的配置信息
+
+```yml
+webapp:
+  image: examples/web
+  ports:
+    - "80:80"
+  volumes:
+    - "/data"
+```
+
+2.0扩展了compose语法，增加`version:"2"`
+
+所有的服务在`services`根下层：
+
+```yml
+version: "2"
+services:
+  webapp:
+    image: examples/web
+    ports:
+      - "80:80"
+    volumes:
+      - "/data"
+```
+
+* `build`: 指定 `Dockerfile` 所在文件夹的路径（可以是绝对路径，或者相对 docker-compose.yml 文件的路径）。 
+* `cap_add, cap_drop` 指定容器的内核能力（capacity）分配。
+* `command`覆盖容器启动后默认执行的命令。
+
