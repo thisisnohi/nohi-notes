@@ -29,7 +29,11 @@
 
 ### 通道 (Channel)
 
-通道是两个队列管理器之间的一种单向的点对点的通信连接，消息在通道中只能单向流 动。如果需要双向交流，可以建立一对通道，一来一去
+通道是两个队列管理器之间的一种单向的点对点的通信连接，消息在通道中只能单向流 动。如果需要双向交流，可以建立一对通道，一来一去。
+
+通道的类型有很多种，其中三种：SDR、RCVR 和 SVRCONN。SDR 是发送通道, RCVR 是接收通道。两个 MQ 之间要进行通信, 那么发送方的队列管理器就需要建立一个发送通道, 接收方的队列管理器就需要建立接收通道。
+
+SVRCONN 类型的通道, 实际上是一种[服务器](https://cloud.tencent.com/product/cvm?from=20067&from_column=20067)通道。它的作用类似于把拥有这个通道的 MQ 当做一个 MQ 服务器, 服务器的作用一般都是与客户端进行交互的。所以 MQ 客户端程序就是通过 SVRCONN 这个通道连接上服务器端所在的 MQ, 连上 MQ 之后, 可以对 MQ 上的队列进行操作, 进行读取和发送消息。
 
 
 
@@ -69,63 +73,61 @@ e,启动管理器平台
 * 以下操作是在队列管理器平台中做的，就是启动管理器平台后才能执行的命令
        (前提是执行启动管理器平台runmqsc QMA)
 
-```
  ```
- a.定义本地队列
-   define qlocal(queueA)
- 	例1：define qlocal(QL1)
- 	若用于队列管理器之间进行通信 即传输队列，这应为 define qlocal(queue1) usage(xmitq).
- 	定义传输队列
- 	define qlocal(QT1) usage(xmitq) trigger trigtype(first) initq(system.channel.initq) trigdata(QM1.QM2)
- 	 例2: define qlocal(QT1) usage(xmitq) trigger trigtype(first) initq(system.channel.initq) trigdata(QM1.QM2)
- 	传输队列是传输的介质，消息是通过传输队列进行传输的。
- 			usage 用途xmitq是传输队列
- 			trigger 消息触发开关
- 			trigtype 触发类型第一条消息触发
- 			initq    初始队列
- 			trigdata 触发数据 
- b.定义远程队列
- 	define qremote(queue.remote) rname(apple.queue) rqmname('queueB') xmitq(queue1)
- 	例3：define qremote(QR1) rname(QL1) rqmname(QM2) xmitq(QT1)
- 	 （xmitq是本地传输队列 ; apple.queue为 远程队列管理器queueB 中的本地队列; ）
- c.定义发送端通道
-   define channel(queueA.queueB) chltype(sdr) conname('192.168.1.90(1414)') xmitq(queueA) trptype(tcp)
-   例4：define channel(QM1.QM2) chltype(sdr) conname('localhost(7788)') xmitq(QT1) trptype(tcp)
-   xmitq本地传输队列		        
- d.定义接受方通道
-   define channel(queueB.queueA) chltype(rcvr) trptype(tcp)
-   例5: define channel(QM2.QM1) chltype(rcvr) trptype(tcp)
-   接受通道和发送通道名称对应，如发送通道名：a.b，则接受通道为: b.a
- e.定义侦听:
- 	def listener(LSR.QM1) trptype(tcp) port(7799) control(qmgr)
- 	例6： def listener(LSR.QM1) trptype(tcp) port(7799) control(qmgr)
- 	解释下 trptype 监听类型
- 				port           监听端口
- 				ontrol        监听控制，如果是qmgr则在队列管理器启动的时候监听也自动启动。
-   
- e.更改侦听端端口号
-   alter listener(system.default.listener.tcp) trptype(tcp) port(1415)
- f.启动侦听
- 	start listener(system.default.listener.tcp)
- g.列出侦听状态
-   display lsstatus(*)  ##此命令必须在监听启动时才可以用，启动监听START LISTENER(启动QM的监听，而不是自己新建的监听)
-  DISPLAY LISTENER(listener_name)		       
- h.测试， 向队列中放入消息
-   amqsput queue_name queue_manager_name
- i.从队列中取出消息
- 	amqsget queue_name queue_manager_name		      
- j.在服务器方建立用于客户方链接的通道
- 	define channel(channel2) chltype(svrconn) trptype(tcp) mcauser(' ')	      
- k.在客户机方，使用MQSERVER定义客户机链接通道（如使用了Active Directory 服务支持，则可略过本步骤）
- 	SET MQSERVER=CHANNEL1/TCP/192.168.1.90(1414)   //Windows
- 	export MQSERVER=’CHANNEL1/TCP/server-hostname(port)’  //linux			  			     
- l.启动监听START LISTENER
- m.结束所有侦听进程
- 	endmqlsr -m mqm_name
- n.退出队列管理器平台
-   end
+  a.定义本地队列
+    define qlocal(queueA)
+  	例1：define qlocal(QL1)
+  	若用于队列管理器之间进行通信 即传输队列，这应为 define qlocal(queue1) usage(xmitq).
+  	定义传输队列
+  	define qlocal(QT1) usage(xmitq) trigger trigtype(first) initq(system.channel.initq) trigdata(QM1.QM2)
+  	 例2: define qlocal(QT1) usage(xmitq) trigger trigtype(first) initq(system.channel.initq) trigdata(QM1.QM2)
+  	传输队列是传输的介质，消息是通过传输队列进行传输的。
+  			usage 用途xmitq是传输队列
+  			trigger 消息触发开关
+  			trigtype 触发类型第一条消息触发
+  			initq    初始队列
+  			trigdata 触发数据 
+  b.定义远程队列
+  	define qremote(queue.remote) rname(apple.queue) rqmname('queueB') xmitq(queue1)
+  	例3：define qremote(QR1) rname(QL1) rqmname(QM2) xmitq(QT1)
+  	 （xmitq是本地传输队列 ; apple.queue为 远程队列管理器queueB 中的本地队列; ）
+  c.定义发送端通道
+    define channel(queueA.queueB) chltype(sdr) conname('192.168.1.90(1414)') xmitq(queueA) trptype(tcp)
+    例4：define channel(QM1.QM2) chltype(sdr) conname('localhost(7788)') xmitq(QT1) trptype(tcp)
+    xmitq本地传输队列		        
+  d.定义接受方通道
+    define channel(queueB.queueA) chltype(rcvr) trptype(tcp)
+    例5: define channel(QM2.QM1) chltype(rcvr) trptype(tcp)
+    接受通道和发送通道名称对应，如发送通道名：a.b，则接受通道为: b.a
+  e.定义侦听:
+  	def listener(LSR.QM1) trptype(tcp) port(7799) control(qmgr)
+  	例6： def listener(LSR.QM1) trptype(tcp) port(7799) control(qmgr)
+  	解释下 trptype 监听类型
+  				port           监听端口
+  				ontrol        监听控制，如果是qmgr则在队列管理器启动的时候监听也自动启动。
+ 
+  e.更改侦听端端口号
+    alter listener(system.default.listener.tcp) trptype(tcp) port(1415)
+  f.启动侦听
+  	start listener(system.default.listener.tcp)
+  g.列出侦听状态
+    display lsstatus(*)  ##此命令必须在监听启动时才可以用，启动监听START LISTENER(启动QM的监听，而不是自己新建的监听)
+   DISPLAY LISTENER(listener_name)		       
+  h.测试， 向队列中放入消息
+    amqsput queue_name queue_manager_name
+  i.从队列中取出消息
+  	amqsget queue_name queue_manager_name		      
+  j.在服务器方建立用于客户方链接的通道
+  	define channel(channel2) chltype(svrconn) trptype(tcp) mcauser(' ')	      
+  k.在客户机方，使用MQSERVER定义客户机链接通道（如使用了Active Directory 服务支持，则可略过本步骤）
+  	SET MQSERVER=CHANNEL1/TCP/192.168.1.90(1414)   //Windows
+  	export MQSERVER=’CHANNEL1/TCP/server-hostname(port)’  //linux			  			     
+  l.启动监听START LISTENER
+  m.结束所有侦听进程
+  	endmqlsr -m mqm_name
+  n.退出队列管理器平台
+    end
  ```
-```
 
 * 查看WebSphere MQ版本号
        dspmqver

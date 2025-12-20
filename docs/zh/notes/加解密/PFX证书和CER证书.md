@@ -2,6 +2,80 @@
 
  
 
+## ssl证书
+
+### 1. 生成私钥（key文件）
+
+```shell
+openssl genrsa -des3 -out server.pass.key 2048   #输入一个4位以上的密码。
+
+# -genra    生成RSA私钥
+# -des3 des3算法
+# -out server.key 生成的私钥文件名
+# -2048 私钥长度
+```
+
+### 2. 去除私钥中的密码
+
+- 有密码的私钥是server.pass.key，没有密码的私钥是server.key
+- 在上一步生成私钥的过程中，由于必须要指定一个密码。而这个密码会带来一个副作用，那就是在每次Apache启动Web服务器时，都会要求输入密码，这显然非常不方便。所以要删除私钥中的密码（生成一个没密码的新私钥文件）。
+
+```ssh
+openssl rsa -in server.pass.key -out server.key
+```
+
+### 3.生成CSR(证书签名请求)
+
+```shell
+openssl req -new -key server.key -out server.csr -subj "/C=CN/ST=Shanghai/L=Shanghai/O=cetc/OU=cetc/CN=www.nginx1.com"
+
+# -req 生成证书签名请求
+# -new 新生成
+# -key 私钥文件
+# -out 生成的CSR文件
+# -subj 生成CSR证书的参数
+```
+
+<img src="https://tuchuang.zqfstack.cn/tuchuang/20250813155626.png" alt="img" style="zoom:50%;" />
+
+
+
+### 4 .生成自签名SSL证书
+
+```shell
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+# -days 证书有效期
+
+ls
+server.crt  server.csr  server.key  server.pass.key
+```
+
+key是服务器上的私钥文件，用于对发送给客户端数据的加密，以及对从客户端接收到数据的解密
+
+csr是证书签名请求文件，用于提交给证书颁发机构（CA）对证书签名
+
+crt是由证书颁发机构（CA）签名后的证书，或者是开发者自签名的证书，包含证书持有人的信息，持有的公钥，以及签署者的签名等信息 备注：在密码学中，X.509是一个标准，规范了公开秘钥认证、证书吊销列表、授权凭证、凭证路径验证算法等。
+
+ 
+
+### 5. CRT 转换为 PEM 格式
+
+```shell
+openssl x509 -in server.crt -out server.pem -outform PEM
+```
+
+
+
+### 6. crt转换为pfx格式
+
+```shell
+openssl pkcs12 -export   -inkey server.key   -in server.crt   -out server.pfx
+```
+
+
+
+
+
 ## 证书
 
 [.pfx 证书和 .cer 证书](https://www.cnblogs.com/ljhdo/p/14109218.html)
